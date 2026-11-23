@@ -13,22 +13,17 @@ interface PizzaVisualProps {
 
 const MAX_SIZE_PX = 180
 
-export function PizzaVisual({ diameter, maxDiameter, label }: Readonly<PizzaVisualProps>): ReactElement {
-  const sizePx = Math.max(
-    20,
-    (diameter / Math.max(maxDiameter, 1)) * MAX_SIZE_PX,
-  )
+export function PizzaVisual({
+  diameter,
+  maxDiameter,
+  label,
+}: Readonly<PizzaVisualProps>): ReactElement {
+  const sizePx = Math.max(20, (diameter / Math.max(maxDiameter, 1)) * MAX_SIZE_PX)
   const center = 50
   const crustWidth = 6
 
   return (
-    <svg
-      viewBox="0 0 100 100"
-      width={sizePx}
-      height={sizePx}
-      role="img"
-      aria-label={label}
-    >
+    <svg viewBox="0 0 100 100" width={sizePx} height={sizePx} role="img" aria-label={label}>
       <circle cx={center} cy={center} r={48} fill="#d9a05b" />
       <circle cx={center} cy={center} r={48 - crustWidth} fill="#f2c14e" />
       {PEPPERONI_RING_RATIOS.map(({ radius, count }) => (
