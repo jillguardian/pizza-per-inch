@@ -101,6 +101,7 @@ export function PizzaCard({
         <Textarea
           label="Notes"
           rows={2}
+          resize="none"
           value={pizza.notes}
           onChange={(event) => onChange({ notes: event.currentTarget.value })}
         />
