@@ -6,6 +6,8 @@ Rules for working in this repo, and why they exist. Add new ones here, not in `C
 
 - **Pin exact versions** (no `^` or `~`). `.npmrc` sets `save-exact=true`, so `npm install <pkg>` pins automatically.
   *Why:* upgrades happen on purpose, through reviewed Dependabot PRs, never by accident.
+- **Keep `@types/node` on the same major as the Node version in the workflows** (`node-version` in `.github/workflows/`). Change them together.
+  *Why:* otherwise the type checker accepts Node APIs that don't exist in CI.
 - **Pin GitHub Actions to a full commit SHA** with the version in a trailing comment (`uses: actions/checkout@<sha> # v7`). Dependabot updates both.
   *Why:* tags can be moved, so a compromised action could change what runs in CI. A SHA can't.
 - **Dependabot** opens weekly PRs for npm packages and GitHub Actions (`.github/dependabot.yml`). Merge them deliberately; CI must pass.
