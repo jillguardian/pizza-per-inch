@@ -5,7 +5,7 @@ import { PizzaCard } from './components/PizzaCard'
 import { Toolbar } from './components/Toolbar'
 import { usePizzas } from './hooks/usePizzas'
 import { detectLocaleCurrency } from './lib/currencies'
-import { convertLength, findBestValueId, type SizeUnit } from './lib/pizza'
+import { convertLength, rankPizzas, type SizeUnit } from './lib/pizza'
 
 const DEFAULT_CURRENCY = detectLocaleCurrency() ?? 'USD'
 
@@ -14,7 +14,7 @@ export default function App(): ReactElement {
   const [currency, setCurrency] = useState(DEFAULT_CURRENCY)
   const [priceUnit, setPriceUnit] = useState<SizeUnit>('in')
 
-  const bestValueId = findBestValueId(pizzas)
+  const ranks = rankPizzas(pizzas)
   const maxDiameterInches = Math.max(...pizzas.map((p) => convertLength(p.diameter, p.unit, 'in')))
   const priceFormat = new Intl.NumberFormat(undefined, {
     style: 'currency',
@@ -45,7 +45,7 @@ export default function App(): ReactElement {
             currency={currency}
             priceUnit={priceUnit}
             priceFormat={priceFormat}
-            isBest={pizza.id === bestValueId && pizzas.length > 1}
+            rank={ranks.get(pizza.id) ?? null}
             maxDiameterInches={maxDiameterInches}
             onChange={(changes) => updatePizza(pizza.id, changes)}
             onRemove={() => removePizza(pizza.id)}

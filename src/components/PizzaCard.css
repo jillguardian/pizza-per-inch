@@ -12,7 +12,3 @@
 .pizza textarea {
   overflow-y: scroll;
 }
-
-.reserved {
-  visibility: hidden;
-}

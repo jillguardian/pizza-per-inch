@@ -11,7 +11,13 @@ import {
   TextInput,
 } from '@mantine/core'
 import type { ReactElement } from 'react'
-import { convertLength, pricePerSquareUnit, type Pizza, type SizeUnit } from '../lib/pizza'
+import {
+  convertLength,
+  pricePerSquareUnit,
+  type Pizza,
+  type PizzaRank,
+  type SizeUnit,
+} from '../lib/pizza'
 import { PizzaVisual } from './PizzaVisual'
 import './PizzaCard.css'
 
@@ -20,7 +26,7 @@ interface PizzaCardProps {
   currency: string
   priceUnit: SizeUnit
   priceFormat: Intl.NumberFormat
-  isBest: boolean
+  rank: PizzaRank | null
   maxDiameterInches: number
   onChange: (changes: Partial<Pizza>) => void
   onRemove: () => void
@@ -41,12 +47,13 @@ export function PizzaCard({
   currency,
   priceUnit,
   priceFormat,
-  isBest,
+  rank,
   maxDiameterInches,
   onChange,
   onRemove,
 }: Readonly<PizzaCardProps>): ReactElement {
   const unitPrice = pricePerSquareUnit(pizza, priceUnit)
+  const isBest = rank?.rank === 1
 
   return (
     <Card
@@ -108,9 +115,18 @@ export function PizzaCard({
         <Text fw={700}>
           {unitPrice === null ? '—' : `${priceFormat.format(unitPrice)} / ${priceUnit}²`}
         </Text>
-        <Badge color="green" w="fit-content" className={isBest ? undefined : 'reserved'}>
-          Best value
-        </Badge>
+        <Group gap="xs" mih={22}>
+          {rank && (
+            <Badge color={isBest ? 'green' : 'gray'}>
+              {isBest ? `#${rank.rank} Best value` : `#${rank.rank}`}
+            </Badge>
+          )}
+          {rank && !isBest && (
+            <Text size="sm" c="dimmed">
+              +{Math.max(1, Math.round(rank.percentAboveBest))}% per area vs best
+            </Text>
+          )}
+        </Group>
         <Button variant="light" color="red" onClick={onRemove}>
           Remove
         </Button>
