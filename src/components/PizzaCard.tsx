@@ -1,6 +1,6 @@
 import {
+  ActionIcon,
   Badge,
-  Button,
   Card,
   Group,
   NativeSelect,
@@ -12,13 +12,15 @@ import {
 } from '@mantine/core'
 import type { ReactElement } from 'react'
 import {
-  convertLength,
+  outline,
   pricePerSquareUnit,
   type Pizza,
   type PizzaRank,
+  type PizzaShape,
   type SizeUnit,
 } from '../lib/pizza'
 import { PizzaVisual } from './PizzaVisual'
+import { TrashIcon } from './TrashIcon'
 import './PizzaCard.css'
 
 interface PizzaCardProps {
@@ -27,12 +29,16 @@ interface PizzaCardProps {
   priceUnit: SizeUnit
   priceFormat: Intl.NumberFormat
   rank: PizzaRank | null
-  maxDiameterInches: number
+  maxSizeInches: number
   onChange: (changes: Partial<Pizza>) => void
   onRemove: () => void
 }
 
 const SIZE_UNIT_OPTIONS = ['in', 'cm']
+const SHAPE_OPTIONS = [
+  { value: 'round', label: 'Round' },
+  { value: 'rectangular', label: 'Rectangle' },
+]
 
 // Mantine reports partial input such as "." as a string, which Number() turns into NaN.
 function toNumber(value: number | string): number {
@@ -48,12 +54,17 @@ export function PizzaCard({
   priceUnit,
   priceFormat,
   rank,
-  maxDiameterInches,
+  maxSizeInches,
   onChange,
   onRemove,
 }: Readonly<PizzaCardProps>): ReactElement {
   const unitPrice = pricePerSquareUnit(pizza, priceUnit)
   const isBest = rank?.rank === 1
+  const visualOutline = outline(pizza, 'in')
+  const visualLabel =
+    pizza.shape === 'round'
+      ? `${pizza.diameter} ${pizza.unit} pizza`
+      : `${pizza.width} × ${pizza.length} ${pizza.unit} rectangular pizza`
 
   return (
     <Card
@@ -71,9 +82,11 @@ export function PizzaCard({
       <Stack gap="xs">
         <div className="visual">
           <PizzaVisual
-            diameter={convertLength(pizza.diameter, pizza.unit, 'in')}
-            maxDiameter={maxDiameterInches}
-            label={`${pizza.diameter} ${pizza.unit} pizza`}
+            shape={pizza.shape}
+            width={visualOutline.width}
+            length={visualOutline.length}
+            maxSize={maxSizeInches}
+            label={visualLabel}
           />
         </div>
         <TextInput
@@ -81,19 +94,63 @@ export function PizzaCard({
           value={pizza.name}
           onChange={(event) => onChange({ name: event.currentTarget.value })}
         />
-        <Group gap="xs" align="flex-end" wrap="nowrap">
-          <NumberInput
-            label="Diameter"
-            min={0}
-            allowNegative={false}
-            allowLeadingZeros={false}
-            hideControls
-            defaultValue={pizza.diameter}
-            onChange={(value) => onChange({ diameter: toNumber(value) })}
+        <Group gap="xs" wrap="nowrap">
+          <NativeSelect
+            aria-label="Shape"
+            data={SHAPE_OPTIONS}
+            value={pizza.shape}
+            onChange={(event) => onChange({ shape: event.currentTarget.value as PizzaShape })}
             style={{ flex: 1 }}
           />
+          <ActionIcon
+            variant="light"
+            color="red"
+            size={36}
+            aria-label="Remove"
+            title="Remove"
+            onClick={onRemove}
+          >
+            <TrashIcon />
+          </ActionIcon>
+        </Group>
+        <Group gap="xs" align="flex-end" wrap="nowrap">
+          {pizza.shape === 'round' ? (
+            <NumberInput
+              label="Diameter"
+              min={0}
+              allowNegative={false}
+              allowLeadingZeros={false}
+              hideControls
+              defaultValue={pizza.diameter}
+              onChange={(value) => onChange({ diameter: toNumber(value) })}
+              style={{ flex: 1 }}
+            />
+          ) : (
+            <>
+              <NumberInput
+                label="Width"
+                min={0}
+                allowNegative={false}
+                allowLeadingZeros={false}
+                hideControls
+                defaultValue={pizza.width}
+                onChange={(value) => onChange({ width: toNumber(value) })}
+                style={{ flex: 1 }}
+              />
+              <NumberInput
+                label="Length"
+                min={0}
+                allowNegative={false}
+                allowLeadingZeros={false}
+                hideControls
+                defaultValue={pizza.length}
+                onChange={(value) => onChange({ length: toNumber(value) })}
+                style={{ flex: 1 }}
+              />
+            </>
+          )}
           <NativeSelect
-            aria-label="Diameter unit"
+            aria-label="Size unit"
             data={SIZE_UNIT_OPTIONS}
             value={pizza.unit}
             onChange={(event) => onChange({ unit: event.currentTarget.value as SizeUnit })}
@@ -127,9 +184,6 @@ export function PizzaCard({
             </Text>
           )}
         </Group>
-        <Button variant="light" color="red" onClick={onRemove}>
-          Remove
-        </Button>
       </Stack>
     </Card>
   )
