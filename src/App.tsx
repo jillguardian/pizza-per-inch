@@ -1,25 +1,28 @@
 import { Container, Text, Title } from '@mantine/core'
 import { useState, type ReactElement } from 'react'
 import './App.css'
-import { PizzaCard } from './components/PizzaCard'
+import { OfferCard } from './components/OfferCard'
 import { Toolbar } from './components/Toolbar'
-import { usePizzas } from './hooks/usePizzas'
+import { useOffers } from './hooks/useOffers'
 import { detectLocaleCurrency } from './lib/currencies'
-import { outline, rankPizzas, type SizeUnit } from './lib/pizza'
+import { rankOffers } from './lib/offer'
+import { outline, type SizeUnit } from './lib/pizza'
 
 const DEFAULT_CURRENCY = detectLocaleCurrency() ?? 'USD'
 
 export default function App(): ReactElement {
-  const { pizzas, addPizza, updatePizza, removePizza } = usePizzas()
+  const { offers, addOffer, updateOffer, updatePizza, removeOffer } = useOffers()
   const [currency, setCurrency] = useState(DEFAULT_CURRENCY)
   const [priceUnit, setPriceUnit] = useState<SizeUnit>('in')
 
-  const ranks = rankPizzas(pizzas)
+  const ranks = rankOffers(offers)
   const maxSizeInches = Math.max(
-    ...pizzas.map((p) => {
-      const { width, length } = outline(p, 'in')
-      return Math.max(width, length)
-    }),
+    ...offers.flatMap((offer) =>
+      offer.pizzas.map((pizza) => {
+        const { width, length } = outline(pizza, 'in')
+        return Math.max(width, length)
+      }),
+    ),
   )
   const priceFormat = new Intl.NumberFormat(undefined, {
     style: 'currency',
@@ -39,21 +42,22 @@ export default function App(): ReactElement {
         priceUnit={priceUnit}
         onCurrencyChange={setCurrency}
         onPriceUnitChange={setPriceUnit}
-        onAddPizza={addPizza}
+        onAddOffer={addOffer}
       />
 
-      <div className="pizzas">
-        {pizzas.map((pizza) => (
-          <PizzaCard
-            key={pizza.id}
-            pizza={pizza}
+      <div className="offers">
+        {offers.map((offer) => (
+          <OfferCard
+            key={offer.id}
+            offer={offer}
             currency={currency}
             priceUnit={priceUnit}
             priceFormat={priceFormat}
-            rank={ranks.get(pizza.id) ?? null}
+            rank={ranks.get(offer.id) ?? null}
             maxSizeInches={maxSizeInches}
-            onChange={(changes) => updatePizza(pizza.id, changes)}
-            onRemove={() => removePizza(pizza.id)}
+            onChange={(changes) => updateOffer(offer.id, changes)}
+            onPizzaChange={(pizzaId, changes) => updatePizza(offer.id, pizzaId, changes)}
+            onRemove={() => removeOffer(offer.id)}
           />
         ))}
       </div>

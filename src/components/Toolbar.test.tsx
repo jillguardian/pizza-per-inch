@@ -7,24 +7,24 @@ import { renderWithMantine } from '../test/render'
 interface ToolbarHandlers {
   onCurrencyChange: Mock
   onPriceUnitChange: Mock
-  onAddPizza: Mock
+  onAddOffer: Mock
 }
 
 function renderToolbar(overrides: Partial<Parameters<typeof Toolbar>[0]> = {}): ToolbarHandlers {
   const handlers = {
     onCurrencyChange: vi.fn(),
     onPriceUnitChange: vi.fn(),
-    onAddPizza: vi.fn(),
+    onAddOffer: vi.fn(),
   }
   renderWithMantine(<Toolbar currency="USD" priceUnit="in" {...handlers} {...overrides} />)
   return handlers
 }
 
 describe('Toolbar', () => {
-  it('asks to add a pizza', async () => {
-    const { onAddPizza } = renderToolbar()
-    await userEvent.click(screen.getByRole('button', { name: '+ Add pizza' }))
-    expect(onAddPizza).toHaveBeenCalledOnce()
+  it('asks to add an offer', async () => {
+    const { onAddOffer } = renderToolbar()
+    await userEvent.click(screen.getByRole('button', { name: '+ Add offer' }))
+    expect(onAddOffer).toHaveBeenCalledOnce()
   })
 
   it('reports a newly selected currency', async () => {

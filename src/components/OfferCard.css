@@ -1,4 +1,4 @@
-.pizza.best {
+.offer.best {
   border-color: var(--mantine-color-green-6);
 }
 
@@ -9,7 +9,7 @@
   height: 190px;
 }
 
-.pizza textarea {
+.offer textarea {
   overflow-y: scroll;
 }
 

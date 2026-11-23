@@ -13,7 +13,7 @@ Static React/TypeScript app that compares pizza prices per area. No backend.
 
 ## Structure
 
-- `src/lib/`: pure logic with colocated tests (`pizza.ts`, `currencies.ts`)
+- `src/lib/`: pure logic with colocated tests: `pizza.ts` (one pizza: sizes, shape, area), `offer.ts` (an offer's price per area and ranking), `currencies.ts`
 - `src/components/`: React components, built with Mantine (`PizzaVisual.tsx` is plain SVG drawn to scale)
 - `src/test/`: test setup (jsdom polyfills for Mantine) and `renderWithMantine`, which component tests must use
 - `src/App.tsx`: state and page layout
@@ -25,7 +25,7 @@ Static React/TypeScript app that compares pizza prices per area. No backend.
 ## Gotchas
 
 - `vite.config.ts` sets `base: '/pizza-per-inch/'` for GitHub Pages. Rename it together with the repo, or assets will 404.
-- Compared pizzas share one currency. Each pizza has its own size unit; areas are converted to a common unit to compare. Mixing currencies is out of scope.
+- An offer is one price for one or more pizzas, and offers are what get ranked. Compared offers share one currency. Each pizza has its own size unit; areas are converted to a common unit to compare. Mixing currencies is out of scope.
 
 ## Decisions (v1)
 
