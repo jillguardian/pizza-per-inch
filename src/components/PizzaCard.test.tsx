@@ -83,6 +83,23 @@ describe('PizzaCard', () => {
     expect(diameter.value).toBe('5')
   })
 
+  it('shows the current diameter and price', () => {
+    renderCard()
+    expect(screen.getByRole<HTMLInputElement>('textbox', { name: 'Diameter' }).value).toBe('10')
+    expect(screen.getByRole<HTMLInputElement>('textbox', { name: 'Price (USD)' }).value).toBe('10')
+  })
+
+  it('reports decimals and treats a cleared field as zero', async () => {
+    const { onChange } = renderCard()
+    const price = screen.getByRole('textbox', { name: 'Price (USD)' })
+
+    await userEvent.clear(price)
+    expect(onChange).toHaveBeenLastCalledWith({ price: 0 })
+
+    await userEvent.type(price, '7.5')
+    expect(onChange).toHaveBeenLastCalledWith({ price: 7.5 })
+  })
+
   it('never reports NaN for partial input', async () => {
     const { onChange } = renderCard()
     const diameter = screen.getByRole('textbox', { name: 'Diameter' })
