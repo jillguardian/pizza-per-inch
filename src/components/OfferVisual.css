@@ -12,9 +12,12 @@
 
 .arrow {
   position: absolute;
-  /* Half of the 158px picture area minus half of the 32px button. Not a transform, because
-     Mantine moves a pressed button with its own transform and the arrow would jump. */
-  top: 63px;
+  /* Centered by auto margins, so no arithmetic and no transform (Mantine moves a pressed
+     button with its own transform and the arrow would jump). */
+  top: 0;
+  bottom: 0;
+  margin-block: auto;
+  height: 32px;
 }
 
 .arrow.previous {
