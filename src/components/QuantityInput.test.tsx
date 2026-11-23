@@ -62,4 +62,15 @@ describe('QuantityInput', () => {
 
     expect(onChange).not.toHaveBeenCalledWith(2.5)
   })
+
+  it('does not accept a number above 99, so the field and the offer always agree', async () => {
+    const onChange = vi.fn()
+    renderWithMantine(<QuantityInput value={2} onChange={onChange} />)
+
+    await userEvent.clear(field())
+    await userEvent.type(field(), '99999999999999999999')
+
+    expect(field().value).toBe('99')
+    expect(onChange).toHaveBeenLastCalledWith(99)
+  })
 })

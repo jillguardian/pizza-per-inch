@@ -6,7 +6,9 @@ interface QuantityInputProps {
   onChange: (quantity: number) => void
 }
 
-// A quantity is a whole number of at least 1. The field may be empty while typing, but that is
+const MAX_QUANTITY = 99
+
+// A quantity is a whole number from 1 to 99. The field may be empty while typing, but that is
 // never reported, and leaving it empty (or at 0) restores the last valid quantity.
 export function QuantityInput({ value, onChange }: Readonly<QuantityInputProps>): ReactElement {
   const [text, setText] = useState<number | string>(value)
@@ -25,6 +27,7 @@ export function QuantityInput({ value, onChange }: Readonly<QuantityInputProps>)
       allowNegative={false}
       allowDecimal={false}
       allowLeadingZeros={false}
+      isAllowed={({ floatValue }) => floatValue === undefined || floatValue <= MAX_QUANTITY}
       hideControls
       value={text}
       onChange={handleChange}
