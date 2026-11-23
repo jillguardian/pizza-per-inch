@@ -24,9 +24,9 @@ export default function App(): ReactElement {
 
   return (
     <Container component="main" size="md" py="md">
-      <Title order={1}>🍕 Pizza per inch</Title>
-      <Text mb="md">
-        Enter diameter and price. The lowest price per area wins, even across different units.
+      <Title order={1}>🍕 Pizza per Inch</Title>
+      <Text size="lg" c="dimmed" mb="md">
+        Compare pizza prices and sizes to find the best deal.
       </Text>
 
       <Toolbar
