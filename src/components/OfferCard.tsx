@@ -11,26 +11,21 @@ import {
   TextInput,
 } from '@mantine/core'
 import type { ReactElement } from 'react'
-import {
-  outline,
-  pricePerSquareUnit,
-  type Pizza,
-  type PizzaRank,
-  type PizzaShape,
-  type SizeUnit,
-} from '../lib/pizza'
+import { pricePerSquareUnit, type Offer, type OfferRank } from '../lib/offer'
+import { outline, type Pizza, type PizzaShape, type SizeUnit } from '../lib/pizza'
 import { PizzaVisual } from './PizzaVisual'
 import { TrashIcon } from './TrashIcon'
-import './PizzaCard.css'
+import './OfferCard.css'
 
-interface PizzaCardProps {
-  pizza: Pizza
+interface OfferCardProps {
+  offer: Offer
   currency: string
   priceUnit: SizeUnit
   priceFormat: Intl.NumberFormat
-  rank: PizzaRank | null
+  rank: OfferRank | null
   maxSizeInches: number
-  onChange: (changes: Partial<Pizza>) => void
+  onChange: (changes: Partial<Pick<Offer, 'name' | 'notes' | 'price'>>) => void
+  onPizzaChange: (pizzaId: number, changes: Partial<Pizza>) => void
   onRemove: () => void
 }
 
@@ -48,17 +43,20 @@ function toNumber(value: number | string): number {
 
 // The number fields are uncontrolled (defaultValue) so Mantine owns the typed text,
 // including partial input like "0." and cleared fields.
-export function PizzaCard({
-  pizza,
+export function OfferCard({
+  offer,
   currency,
   priceUnit,
   priceFormat,
   rank,
   maxSizeInches,
   onChange,
+  onPizzaChange,
   onRemove,
-}: Readonly<PizzaCardProps>): ReactElement {
-  const unitPrice = pricePerSquareUnit(pizza, priceUnit)
+}: Readonly<OfferCardProps>): ReactElement {
+  // An offer holds one pizza until the card can list several.
+  const pizza = offer.pizzas[0]
+  const unitPrice = pricePerSquareUnit(offer, priceUnit)
   const isBest = rank?.rank === 1
   const visualOutline = outline(pizza, 'in')
   const visualLabel =
@@ -72,7 +70,7 @@ export function PizzaCard({
       withBorder
       padding="md"
       radius="md"
-      className={isBest ? 'pizza best' : 'pizza'}
+      className={isBest ? 'offer best' : 'offer'}
     >
       {rank && (
         <Badge color={isBest ? 'green' : 'gray'} className="rank">
@@ -91,7 +89,7 @@ export function PizzaCard({
         </div>
         <TextInput
           aria-label="Name"
-          value={pizza.name}
+          value={offer.name}
           onChange={(event) => onChange({ name: event.currentTarget.value })}
         />
         <Group gap="xs" wrap="nowrap">
@@ -99,7 +97,9 @@ export function PizzaCard({
             aria-label="Shape"
             data={SHAPE_OPTIONS}
             value={pizza.shape}
-            onChange={(event) => onChange({ shape: event.currentTarget.value as PizzaShape })}
+            onChange={(event) =>
+              onPizzaChange(pizza.id, { shape: event.currentTarget.value as PizzaShape })
+            }
             style={{ flex: 1 }}
           />
           <ActionIcon
@@ -113,7 +113,7 @@ export function PizzaCard({
             <TrashIcon />
           </ActionIcon>
         </Group>
-        <Group gap="xs" align="flex-end" wrap="nowrap">
+        <Group key={pizza.id} gap="xs" align="flex-end" wrap="nowrap">
           {pizza.shape === 'round' ? (
             <NumberInput
               label="Diameter"
@@ -122,7 +122,7 @@ export function PizzaCard({
               allowLeadingZeros={false}
               hideControls
               defaultValue={pizza.diameter}
-              onChange={(value) => onChange({ diameter: toNumber(value) })}
+              onChange={(value) => onPizzaChange(pizza.id, { diameter: toNumber(value) })}
               style={{ flex: 1 }}
             />
           ) : (
@@ -134,7 +134,7 @@ export function PizzaCard({
                 allowLeadingZeros={false}
                 hideControls
                 defaultValue={pizza.width}
-                onChange={(value) => onChange({ width: toNumber(value) })}
+                onChange={(value) => onPizzaChange(pizza.id, { width: toNumber(value) })}
                 style={{ flex: 1 }}
               />
               <NumberInput
@@ -144,7 +144,7 @@ export function PizzaCard({
                 allowLeadingZeros={false}
                 hideControls
                 defaultValue={pizza.length}
-                onChange={(value) => onChange({ length: toNumber(value) })}
+                onChange={(value) => onPizzaChange(pizza.id, { length: toNumber(value) })}
                 style={{ flex: 1 }}
               />
             </>
@@ -153,7 +153,9 @@ export function PizzaCard({
             aria-label="Size unit"
             data={SIZE_UNIT_OPTIONS}
             value={pizza.unit}
-            onChange={(event) => onChange({ unit: event.currentTarget.value as SizeUnit })}
+            onChange={(event) =>
+              onPizzaChange(pizza.id, { unit: event.currentTarget.value as SizeUnit })
+            }
             w={72}
           />
         </Group>
@@ -164,14 +166,14 @@ export function PizzaCard({
           allowLeadingZeros={false}
           decimalScale={2}
           hideControls
-          defaultValue={pizza.price}
+          defaultValue={offer.price}
           onChange={(value) => onChange({ price: toNumber(value) })}
         />
         <Textarea
           label="Notes"
           rows={2}
           resize="none"
-          value={pizza.notes}
+          value={offer.notes}
           onChange={(event) => onChange({ notes: event.currentTarget.value })}
         />
         <Group justify="space-between" wrap="nowrap" mih={22}>

@@ -11,7 +11,7 @@ interface ToolbarProps {
   priceUnit: SizeUnit
   onCurrencyChange: (currency: string) => void
   onPriceUnitChange: (unit: SizeUnit) => void
-  onAddPizza: () => void
+  onAddOffer: () => void
 }
 
 function toOptions(currencies: Currency[]): { value: string; label: string }[] {
@@ -33,7 +33,7 @@ export function Toolbar({
   priceUnit,
   onCurrencyChange,
   onPriceUnitChange,
-  onAddPizza,
+  onAddOffer,
 }: Readonly<ToolbarProps>): ReactElement {
   return (
     <Group className="toolbar" align="flex-end">
@@ -49,7 +49,7 @@ export function Toolbar({
         value={priceUnit}
         onChange={(event) => onPriceUnitChange(event.currentTarget.value as SizeUnit)}
       />
-      <Button onClick={onAddPizza}>+ Add pizza</Button>
+      <Button onClick={onAddOffer}>+ Add offer</Button>
     </Group>
   )
 }

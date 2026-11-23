@@ -1,32 +1,39 @@
+import { MantineProvider } from '@mantine/core'
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi, type Mock } from 'vitest'
-import type { Pizza, PizzaRank } from '../lib/pizza'
-import { PizzaCard } from './PizzaCard'
+import type { Offer, OfferRank } from '../lib/offer'
+import type { Pizza } from '../lib/pizza'
+import { OfferCard } from './OfferCard'
 import { renderWithMantine } from '../test/render'
 
 const pizza: Pizza = {
   id: 1,
-  name: 'Small',
-  notes: '',
   shape: 'round',
   diameter: 10,
   width: 12,
   length: 16,
   unit: 'in',
-  price: 10,
+  quantity: 1,
 }
+
+const offer: Offer = { id: 1, name: 'Small', notes: '', price: 10, pizzas: [pizza] }
 
 interface CardHandlers {
   onChange: Mock
+  onPizzaChange: Mock
   onRemove: Mock
 }
 
-function renderCard(overrides: Partial<Pizza> = {}, rank: PizzaRank | null = null): CardHandlers {
-  const handlers = { onChange: vi.fn(), onRemove: vi.fn() }
+function renderCard(
+  pizzaOverrides: Partial<Pizza> = {},
+  rank: OfferRank | null = null,
+  offerOverrides: Partial<Offer> = {},
+): CardHandlers {
+  const handlers = { onChange: vi.fn(), onPizzaChange: vi.fn(), onRemove: vi.fn() }
   renderWithMantine(
-    <PizzaCard
-      pizza={{ ...pizza, ...overrides }}
+    <OfferCard
+      offer={{ ...offer, pizzas: [{ ...pizza, ...pizzaOverrides }], ...offerOverrides }}
       currency="USD"
       priceUnit="in"
       priceFormat={
@@ -44,7 +51,7 @@ function renderCard(overrides: Partial<Pizza> = {}, rank: PizzaRank | null = nul
   return handlers
 }
 
-describe('PizzaCard', () => {
+describe('OfferCard', () => {
   it('asks for a diameter on a round pizza', () => {
     renderCard()
     expect(screen.getByRole('textbox', { name: 'Diameter' })).toBeTruthy()
@@ -59,23 +66,23 @@ describe('PizzaCard', () => {
   })
 
   it('reports the chosen shape', async () => {
-    const { onChange } = renderCard()
+    const { onPizzaChange } = renderCard()
     await userEvent.selectOptions(screen.getByLabelText('Shape'), 'rectangular')
-    expect(onChange).toHaveBeenLastCalledWith({ shape: 'rectangular' })
+    expect(onPizzaChange).toHaveBeenLastCalledWith(1, { shape: 'rectangular' })
   })
 
   it('reports width and length changes', async () => {
-    const { onChange } = renderCard({ shape: 'rectangular' })
+    const { onPizzaChange } = renderCard({ shape: 'rectangular' })
 
     const width = screen.getByRole('textbox', { name: 'Width' })
     await userEvent.clear(width)
     await userEvent.type(width, '9')
-    expect(onChange).toHaveBeenLastCalledWith({ width: 9 })
+    expect(onPizzaChange).toHaveBeenLastCalledWith(1, { width: 9 })
 
     const length = screen.getByRole('textbox', { name: 'Length' })
     await userEvent.clear(length)
     await userEvent.type(length, '14')
-    expect(onChange).toHaveBeenLastCalledWith({ length: 14 })
+    expect(onPizzaChange).toHaveBeenLastCalledWith(1, { length: 14 })
   })
 
   it('shows the price per area of a rectangular pizza', () => {
@@ -95,7 +102,7 @@ describe('PizzaCard', () => {
     expect(screen.getByText('+23% vs best')).toBeTruthy()
   })
 
-  it('shows no rank when the pizza is not ranked', () => {
+  it('shows no rank when the offer is not ranked', () => {
     renderCard()
     expect(screen.queryByText(/#\d/)).toBeNull()
   })
@@ -105,7 +112,7 @@ describe('PizzaCard', () => {
     expect(screen.getByText('$0.1273 / in²')).toBeTruthy()
   })
 
-  it('shows a dash when the pizza cannot be compared', () => {
+  it('shows a dash when the offer cannot be compared', () => {
     renderCard({ diameter: 0 })
     expect(screen.getByText('—')).toBeTruthy()
   })
@@ -116,7 +123,7 @@ describe('PizzaCard', () => {
   })
 
   it('reports name, notes, unit, diameter, and price changes', async () => {
-    const { onChange } = renderCard()
+    const { onChange, onPizzaChange } = renderCard()
 
     await userEvent.type(screen.getByLabelText('Name'), '!')
     expect(onChange).toHaveBeenLastCalledWith({ name: 'Small!' })
@@ -125,12 +132,12 @@ describe('PizzaCard', () => {
     expect(onChange).toHaveBeenLastCalledWith({ notes: 'x' })
 
     await userEvent.selectOptions(screen.getByLabelText('Size unit'), 'cm')
-    expect(onChange).toHaveBeenLastCalledWith({ unit: 'cm' })
+    expect(onPizzaChange).toHaveBeenLastCalledWith(1, { unit: 'cm' })
 
     const diameter = screen.getByRole('textbox', { name: 'Diameter' })
     await userEvent.clear(diameter)
     await userEvent.type(diameter, '7')
-    expect(onChange).toHaveBeenLastCalledWith({ diameter: 7 })
+    expect(onPizzaChange).toHaveBeenLastCalledWith(1, { diameter: 7 })
 
     const price = screen.getByLabelText('Price (USD)')
     await userEvent.clear(price)
@@ -166,14 +173,37 @@ describe('PizzaCard', () => {
   })
 
   it('never reports NaN for partial input', async () => {
-    const { onChange } = renderCard()
+    const { onPizzaChange } = renderCard()
     const diameter = screen.getByRole('textbox', { name: 'Diameter' })
 
     await userEvent.clear(diameter)
     await userEvent.type(diameter, '.')
 
-    const reported = onChange.mock.calls.map(([changes]) => changes.diameter)
+    const reported = onPizzaChange.mock.calls.map(([, changes]) => changes.diameter)
     expect(reported.every((value) => Number.isFinite(value))).toBe(true)
+  })
+
+  it('shows the sizes of another pizza when the pizza changes', () => {
+    const props = {
+      currency: 'USD',
+      priceUnit: 'in' as const,
+      priceFormat: new Intl.NumberFormat('en-US'),
+      rank: null,
+      maxSizeInches: 16,
+      onChange: vi.fn(),
+      onPizzaChange: vi.fn(),
+      onRemove: vi.fn(),
+    }
+    const { rerender } = renderWithMantine(<OfferCard offer={offer} {...props} />)
+    const other = { ...offer, pizzas: [{ ...pizza, id: 2, diameter: 20 }] }
+
+    rerender(
+      <MantineProvider>
+        <OfferCard offer={other} {...props} />
+      </MantineProvider>,
+    )
+
+    expect(screen.getByRole<HTMLInputElement>('textbox', { name: 'Diameter' }).value).toBe('20')
   })
 
   it('asks to be removed', async () => {
