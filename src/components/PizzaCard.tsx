@@ -28,6 +28,12 @@ interface PizzaCardProps {
 
 const SIZE_UNIT_OPTIONS = ['in', 'cm']
 
+// Mantine reports partial input such as "." as a string, which Number() turns into NaN.
+function toNumber(value: number | string): number {
+  const number = Number(value)
+  return Number.isFinite(number) ? number : 0
+}
+
 // The number fields are uncontrolled (defaultValue) so Mantine owns the typed text,
 // including partial input like "0." and cleared fields.
 export function PizzaCard({
@@ -71,7 +77,7 @@ export function PizzaCard({
             allowLeadingZeros={false}
             hideControls
             defaultValue={pizza.diameter}
-            onChange={(value) => onChange({ diameter: Number(value) })}
+            onChange={(value) => onChange({ diameter: toNumber(value) })}
             style={{ flex: 1 }}
           />
           <NativeSelect
@@ -90,7 +96,7 @@ export function PizzaCard({
           decimalScale={2}
           hideControls
           defaultValue={pizza.price}
-          onChange={(value) => onChange({ price: Number(value) })}
+          onChange={(value) => onChange({ price: toNumber(value) })}
         />
         <Textarea
           label="Notes"

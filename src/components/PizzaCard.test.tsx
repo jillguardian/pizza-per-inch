@@ -83,6 +83,17 @@ describe('PizzaCard', () => {
     expect(diameter.value).toBe('5')
   })
 
+  it('never reports NaN for partial input', async () => {
+    const { onChange } = renderCard()
+    const diameter = screen.getByRole('textbox', { name: 'Diameter' })
+
+    await userEvent.clear(diameter)
+    await userEvent.type(diameter, '.')
+
+    const reported = onChange.mock.calls.map(([changes]) => changes.diameter)
+    expect(reported.every((value) => Number.isFinite(value))).toBe(true)
+  })
+
   it('asks to be removed', async () => {
     const { onRemove } = renderCard()
     await userEvent.click(screen.getByRole('button', { name: 'Remove' }))
