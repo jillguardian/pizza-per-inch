@@ -117,14 +117,16 @@ export function PizzaCard({
           value={pizza.notes}
           onChange={(event) => onChange({ notes: event.currentTarget.value })}
         />
-        <Text fw={700}>
-          {unitPrice === null ? '—' : `${priceFormat.format(unitPrice)} / ${priceUnit}²`}
-        </Text>
-        <Text size="sm" c="dimmed" mih={22}>
-          {rank &&
-            !isBest &&
-            `+${Math.max(1, Math.round(rank.percentAboveBest))}% per area vs best`}
-        </Text>
+        <Group justify="space-between" wrap="nowrap" mih={22}>
+          <Text fw={700}>
+            {unitPrice === null ? '—' : `${priceFormat.format(unitPrice)} / ${priceUnit}²`}
+          </Text>
+          {rank && !isBest && (
+            <Text size="sm" c="dimmed">
+              +{Math.max(1, Math.round(rank.percentAboveBest))}% vs best
+            </Text>
+          )}
+        </Group>
         <Button variant="light" color="red" onClick={onRemove}>
           Remove
         </Button>

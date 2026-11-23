@@ -44,7 +44,7 @@ describe('PizzaCard', () => {
   it('shows the rank and the gap to the best on other cards', () => {
     renderCard({}, { rank: 2, percentAboveBest: 22.6 })
     expect(screen.getByText('#2')).toBeTruthy()
-    expect(screen.getByText('+23% per area vs best')).toBeTruthy()
+    expect(screen.getByText('+23% vs best')).toBeTruthy()
   })
 
   it('shows no rank when the pizza is not ranked', () => {
