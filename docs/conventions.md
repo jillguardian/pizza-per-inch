@@ -37,3 +37,14 @@ When splitting:
 - Turn the file into a folder (for example `lib/pizza/{types,area,ranking}.ts`) with an `index.ts`, so existing imports keep working.
 - Name files by domain, not `constants.ts` or `utils.ts`, which become dumping grounds.
 - A component's props type always stays in the component's file.
+
+## Git
+
+- **Commit format:** `Prefix: Short imperative summary`, for example `Fix: Grid column overflow`.
+  Prefixes: `Feat`, `Fix`, `Refactor`, `Docs`, `Test`, `Upgrade`, `Chore`. Don't repeat the prefix verb in the summary (`Upgrade: React to 19`, not `Upgrade: Upgrade React`).
+- **Issue references:** keep the subject line clean. Put the issue in the commit body when it helps (`Refs #12`), and put `Closes #12` in the PR description so the issue closes when the PR merges.
+  *Why:* we rebase and don't squash, so each commit lands on `main` on its own. A `Refs` line keeps it traceable to its issue.
+- **Branches:** `feat/short-name`, `fix/short-name`, and so on, matching the commit prefix. One topic per branch and PR.
+- **Rebase, don't merge.** Pull with `--rebase`. Rebasing a pushed branch needs `--force-with-lease`, never plain `--force`.
+- **Pull requests** use `.github/pull_request_template.md`. CI must pass before merging.
+- **Dependabot** commits use the `Upgrade` prefix to match this format.
