@@ -46,7 +46,12 @@ When splitting:
 - **Issue references:** put `Closes #12` in the PR description so the issue closes on merge. Keep issue numbers out of commit subjects and PR titles.
   *Why:* GitHub appends the PR number to the squashed subject, so an issue number there would look like a second PR link.
 - Commits inside a branch may carry `Refs #12` in the body. The squash folds them into one commit, so this mainly helps reviewers.
-- **Branches:** `feat/short-name`, `fix/short-name`, and so on, matching the commit prefix. One topic per branch and PR.
+- **Branches:** `<type>/<issue-number>-<short-description>`, for example `feat/16-rank-pizzas` or `fix/5-validate-inputs`.
+  - `<type>` is the lowercase commit prefix (`feat`, `fix`, `refactor`, `docs`, `test`, `upgrade`, `chore`).
+  - The description is a few lowercase words joined by hyphens, under about 40 characters in total.
+  - Work without an issue drops the number (`chore/bump-node`).
+  - One topic per branch and PR. Branches are deleted on merge.
+  *Why the issue number:* branch names don't reach `main` after a squash, so it can't be mistaken for the PR link, and it makes the branch easy to trace back to its issue.
 - **Rebase, don't merge.** Pull with `--rebase`. Rebasing a pushed branch needs `--force-with-lease`, never plain `--force`.
 - **Pull requests** use `.github/pull_request_template.md`. CI must pass before merging.
 - **Dependabot** commits use the `Upgrade` prefix to match this format.
