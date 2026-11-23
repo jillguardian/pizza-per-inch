@@ -38,12 +38,12 @@ jobs:
       - run: npm test
       - run: npm run build
 
-  # Not a required check: a newly published advisory shouldn't block unrelated PRs.
-  audit:
+  # Flags only the vulnerable dependencies this PR adds or changes, so it can
+  # be a required check without failing on unrelated, existing advisories.
+  dependency-review:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/dependency-review-action@v5
         with:
-          node-version: 22
-      - run: npm audit --audit-level=high
+          fail-on-severity: high

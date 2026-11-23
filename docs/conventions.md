@@ -7,9 +7,10 @@ Rules for working in this repo, and why they exist. Add new ones here, not in `C
 - **Pin exact versions** (no `^` or `~`). `.npmrc` sets `save-exact=true`, so `npm install <pkg>` pins automatically.
   *Why:* upgrades happen on purpose, through reviewed Dependabot PRs, never by accident.
 - **Dependabot** opens weekly PRs for npm packages and GitHub Actions (`.github/dependabot.yml`). Merge them deliberately; CI must pass.
-- **Vulnerability checks:** `npm audit --audit-level=high` runs as a separate `audit` job on every PR (`ci.yml`) and weekly (`audit.yml`). The PR job is **not** a required check.
-  *Why:* a newly published advisory can fail the audit for reasons unrelated to the PR, so it must be visible without blocking merges. The weekly run and Dependabot alerts are the safety net.
-  *Why:* a weekly run catches advisories published between PRs.
+- **Vulnerability checks:**
+  - PRs: a `dependency-review` job (GitHub's Dependency Review action) fails when a PR adds or changes a dependency with a known `high` or `critical` vulnerability.
+  - Weekly: `npm audit --audit-level=high` (`audit.yml`) covers advisories published for dependencies that are already in the tree. Dependabot alerts do too.
+  *Why:* the PR check only looks at what the PR changes, so it can't fail because of an unrelated, newly published advisory and can safely be required. The weekly audit catches the rest.
 - Before adding a dependency, check it earns its weight. Prefer the standard library or built-in browser APIs (e.g. `Intl`).
 
 ## Code
@@ -69,7 +70,7 @@ When splitting:
 
 The `Default branch` ruleset (Settings -> Rules) protects `main`:
 
-- The `check` CI job must pass, and the branch must be up to date. The `audit` job is deliberately not required.
+- The `check` CI job must pass, and the branch must be up to date. The `dependency-review` job should be required too (it only fails on vulnerabilities the PR itself introduces).
 - Conversations must be resolved before merging.
 - No required approving reviews: this is a solo repo, and an author can't approve their own PR. The review is `/code-review`, whose resolved threads are the record.
 - Linear history; no force-push or deletion.
