@@ -101,20 +101,22 @@ describe('OfferCard', () => {
   it('marks the first rank as best value', () => {
     renderCard({}, { rank: 1, percentAboveBest: 0 })
     expect(screen.getByText('Best value')).toBeTruthy()
-    expect(screen.getByLabelText('Rank 1').textContent).toBe('#1')
+    expect(screen.getByText('#1')).toBeTruthy()
+    expect(screen.getByText('Rank')).toBeTruthy()
     expect(screen.queryByText(/vs best/)).toBeNull()
   })
 
   it('shows the rank and the gap to the best on other cards', () => {
     renderCard({}, { rank: 2, percentAboveBest: 22.6 })
-    expect(screen.getByLabelText('Rank 2').textContent).toBe('#2')
+    expect(screen.getByText('#2')).toBeTruthy()
+    expect(screen.getByText('Rank')).toBeTruthy()
     expect(screen.getByText('+23% vs best')).toBeTruthy()
     expect(screen.queryByText('Best value')).toBeNull()
   })
 
   it('shows no rank when the offer is not ranked', () => {
     renderCard()
-    expect(screen.queryByLabelText(/^Rank/)).toBeNull()
+    expect(screen.queryByText('Rank')).toBeNull()
   })
 
   it('shows the price per area', () => {

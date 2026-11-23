@@ -9,6 +9,7 @@ import {
   Text,
   Textarea,
   TextInput,
+  VisuallyHidden,
 } from '@mantine/core'
 import { useState, type ReactElement } from 'react'
 import { pricePerSquareUnit, type Offer, type OfferRank } from '../lib/offer'
@@ -131,11 +132,10 @@ export function OfferCard({
                 <Badge
                   size="lg"
                   color={rankColor(rank.rank)}
-                  aria-label={`Rank ${rank.rank}`}
                   title={isBest ? `Rank ${rank.rank}, best value` : `Rank ${rank.rank}`}
                   className="rank"
                 >
-                  #{rank.rank}
+                  <VisuallyHidden>Rank </VisuallyHidden>#{rank.rank}
                 </Badge>
               )}
               <OfferVisual
