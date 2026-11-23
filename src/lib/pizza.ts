@@ -26,17 +26,36 @@ export function pricePerSquareUnit(pizza: Pizza, unit: SizeUnit): number | null 
   return pizza.price / pizzaArea
 }
 
-export function findBestValueId(pizzas: Pizza[]): number | null {
-  let bestId: number | null = null
-  let bestPrice = Infinity
-  for (const pizza of pizzas) {
-    const price = pricePerSquareUnit(pizza, 'in')
-    if (price !== null && price < bestPrice) {
-      bestPrice = price
-      bestId = pizza.id
-    }
+export interface PizzaRank {
+  rank: number
+  percentAboveBest: number
+}
+
+// Prices per area closer than this (relative) count as a tie, so float noise from unit
+// conversion cannot split pizzas that cost the same.
+const TIE_TOLERANCE = 1e-9
+
+// Ranks comparable pizzas by price per square inch, so mixed units compare fairly. Ties share
+// a rank and the next rank follows without a gap (1, 1, 2). Pizzas without a size or price get
+// no entry, and nothing is ranked until at least two pizzas can be compared.
+export function rankPizzas(pizzas: Pizza[]): Map<number, PizzaRank> {
+  const comparable = pizzas
+    .map((pizza) => ({ id: pizza.id, price: pricePerSquareUnit(pizza, 'in') }))
+    .filter((entry): entry is { id: number; price: number } => entry.price !== null)
+    .sort((a, b) => a.price - b.price)
+
+  const ranks = new Map<number, PizzaRank>()
+  if (comparable.length < 2) return ranks
+
+  const bestPrice = comparable[0].price
+  let rank = 0
+  let previousPrice = -Infinity
+  for (const { id, price } of comparable) {
+    if (price - previousPrice > previousPrice * TIE_TOLERANCE) rank += 1
+    previousPrice = price
+    ranks.set(id, { rank, percentAboveBest: (price / bestPrice - 1) * 100 })
   }
-  return bestId
+  return ranks
 }
 
 export const INITIAL_PIZZAS: Pizza[] = [

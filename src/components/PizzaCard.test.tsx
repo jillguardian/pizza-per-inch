@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi, type Mock } from 'vitest'
-import type { Pizza } from '../lib/pizza'
+import type { Pizza, PizzaRank } from '../lib/pizza'
 import { PizzaCard } from './PizzaCard'
 import { renderWithMantine } from '../test/render'
 
@@ -12,7 +12,7 @@ interface CardHandlers {
   onRemove: Mock
 }
 
-function renderCard(overrides: Partial<Pizza> = {}): CardHandlers {
+function renderCard(overrides: Partial<Pizza> = {}, rank: PizzaRank | null = null): CardHandlers {
   const handlers = { onChange: vi.fn(), onRemove: vi.fn() }
   renderWithMantine(
     <PizzaCard
@@ -26,7 +26,7 @@ function renderCard(overrides: Partial<Pizza> = {}): CardHandlers {
           minimumFractionDigits: 4,
         })
       }
-      isBest={false}
+      rank={rank}
       maxDiameterInches={16}
       {...handlers}
     />,
@@ -35,6 +35,23 @@ function renderCard(overrides: Partial<Pizza> = {}): CardHandlers {
 }
 
 describe('PizzaCard', () => {
+  it('marks the first rank as best value', () => {
+    renderCard({}, { rank: 1, percentAboveBest: 0 })
+    expect(screen.getByText('#1 Best value')).toBeTruthy()
+    expect(screen.queryByText(/vs best/)).toBeNull()
+  })
+
+  it('shows the rank and the gap to the best on other cards', () => {
+    renderCard({}, { rank: 2, percentAboveBest: 22.6 })
+    expect(screen.getByText('#2')).toBeTruthy()
+    expect(screen.getByText('+23% vs best')).toBeTruthy()
+  })
+
+  it('shows no rank when the pizza is not ranked', () => {
+    renderCard()
+    expect(screen.queryByText(/#\d/)).toBeNull()
+  })
+
   it('shows the price per area', () => {
     renderCard()
     expect(screen.getByText('$0.1273 / in²')).toBeTruthy()

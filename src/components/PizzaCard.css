@@ -13,6 +13,8 @@
   overflow-y: scroll;
 }
 
-.reserved {
-  visibility: hidden;
+.rank {
+  position: absolute;
+  top: var(--mantine-spacing-sm);
+  right: var(--mantine-spacing-sm);
 }

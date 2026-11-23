@@ -11,7 +11,13 @@ import {
   TextInput,
 } from '@mantine/core'
 import type { ReactElement } from 'react'
-import { convertLength, pricePerSquareUnit, type Pizza, type SizeUnit } from '../lib/pizza'
+import {
+  convertLength,
+  pricePerSquareUnit,
+  type Pizza,
+  type PizzaRank,
+  type SizeUnit,
+} from '../lib/pizza'
 import { PizzaVisual } from './PizzaVisual'
 import './PizzaCard.css'
 
@@ -20,7 +26,7 @@ interface PizzaCardProps {
   currency: string
   priceUnit: SizeUnit
   priceFormat: Intl.NumberFormat
-  isBest: boolean
+  rank: PizzaRank | null
   maxDiameterInches: number
   onChange: (changes: Partial<Pizza>) => void
   onRemove: () => void
@@ -41,12 +47,13 @@ export function PizzaCard({
   currency,
   priceUnit,
   priceFormat,
-  isBest,
+  rank,
   maxDiameterInches,
   onChange,
   onRemove,
 }: Readonly<PizzaCardProps>): ReactElement {
   const unitPrice = pricePerSquareUnit(pizza, priceUnit)
+  const isBest = rank?.rank === 1
 
   return (
     <Card
@@ -56,6 +63,11 @@ export function PizzaCard({
       radius="md"
       className={isBest ? 'pizza best' : 'pizza'}
     >
+      {rank && (
+        <Badge color={isBest ? 'green' : 'gray'} className="rank">
+          {isBest ? `#${rank.rank} Best value` : `#${rank.rank}`}
+        </Badge>
+      )}
       <Stack gap="xs">
         <div className="visual">
           <PizzaVisual
@@ -105,12 +117,16 @@ export function PizzaCard({
           value={pizza.notes}
           onChange={(event) => onChange({ notes: event.currentTarget.value })}
         />
-        <Text fw={700}>
-          {unitPrice === null ? '—' : `${priceFormat.format(unitPrice)} / ${priceUnit}²`}
-        </Text>
-        <Badge color="green" w="fit-content" className={isBest ? undefined : 'reserved'}>
-          Best value
-        </Badge>
+        <Group justify="space-between" wrap="nowrap" mih={22}>
+          <Text fw={700}>
+            {unitPrice === null ? '—' : `${priceFormat.format(unitPrice)} / ${priceUnit}²`}
+          </Text>
+          {rank && !isBest && (
+            <Text size="sm" c="dimmed">
+              +{Math.max(1, Math.round(rank.percentAboveBest))}% vs best
+            </Text>
+          )}
+        </Group>
         <Button variant="light" color="red" onClick={onRemove}>
           Remove
         </Button>
