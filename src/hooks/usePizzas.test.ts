@@ -24,7 +24,9 @@ describe('usePizzas', () => {
     const { result } = renderHook(() => usePizzas())
 
     act(() => result.current.addPizza())
-    const addedId = result.current.pizzas.at(-1)!.id
+    const addedPizza = result.current.pizzas.at(-1)
+    if (!addedPizza) throw new Error('Expected a pizza to be added')
+    const addedId = addedPizza.id
     act(() => result.current.removePizza(addedId))
     act(() => result.current.addPizza())
 
