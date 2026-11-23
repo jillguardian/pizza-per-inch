@@ -55,3 +55,21 @@ When splitting:
 - **Rebase, don't merge.** Pull with `--rebase`. Rebasing a pushed branch needs `--force-with-lease`, never plain `--force`.
 - **Pull requests** use `.github/pull_request_template.md`. CI must pass before merging.
 - **Dependabot** commits use the `Upgrade` prefix to match this format.
+
+### Enforcement
+
+- **CI** (`ci.yml`, the `check` job) checks the PR title and every commit subject in the PR with `scripts/check-subject.sh`. It re-runs when the title is edited. Maximum length is 100 characters, which leaves room for Dependabot's longer titles and the `(#N)` GitHub appends.
+- **Local hook (optional):** `git config core.hooksPath .githooks` runs the same check on every commit message. `fixup!` and `squash!` commits are allowed locally for `git rebase --autosquash`, but CI rejects them, so squash them before pushing.
+- A `git revert` message (`Revert "..."`) doesn't match the format. Reword it before pushing.
+- Commits already on `main` from before this rule (the first Dependabot PRs) keep their old `Build(deps)` subjects.
+- Not checked automatically: repeating the prefix verb in the summary (`Upgrade: Upgrade React`). That stays a review item.
+
+### Repository rules
+
+The `Default branch` ruleset (Settings -> Rules) protects `main`:
+
+- The `check` CI job must pass, and the branch must be up to date.
+- Conversations must be resolved before merging.
+- No required approving reviews: this is a solo repo, and an author can't approve their own PR. The review is `/code-review`, whose resolved threads are the record.
+- Linear history; no force-push or deletion.
+- Repository admins can bypass through a pull request.

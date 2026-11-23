@@ -1,0 +1,10 @@
+#!/bin/sh
+# Optional local check. Enable with: git config core.hooksPath .githooks
+subject=$(head -n 1 "$1")
+
+# Let `git rebase --autosquash` work with its temporary commits.
+case "$subject" in
+  fixup!\ * | squash!\ *) exit 0 ;;
+esac
+
+exec "$(git rev-parse --show-toplevel)/scripts/check-subject.sh" "$subject"
