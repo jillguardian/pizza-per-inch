@@ -19,6 +19,8 @@ Rules for working in this repo, and why they exist. Add new ones here, not in `C
 
 ## Code
 
+- **Format with Prettier** (`npm run format`). CI runs `npm run format:check` and fails on unformatted files. Settings are in `.prettierrc.json`: no semicolons, single quotes, 100 columns.
+  _Why:_ formatting is decided by the tool, so reviews stay about the code.
 - **Explicit return type on every function**, enforced by oxlint. React components return `ReactElement`.
   _Why:_ the type becomes part of the function's documented contract, and accidental return types can't leak.
 - **Wrap component props in `Readonly<>`** (`props: Readonly<Props>`).

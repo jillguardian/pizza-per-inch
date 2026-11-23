@@ -7,6 +7,7 @@ Static React/TypeScript app that compares pizza prices per area. No backend.
 - `npm run dev`: dev server at `/pizza-per-inch/`
 - `npm test`: Vitest
 - `npm run lint`: oxlint
+- `npm run format`: Prettier (`format:check` runs in CI)
 - `npm run build`: type-check and production build
 - `npm audit --audit-level=high`: vulnerability check (also runs in CI)
 
