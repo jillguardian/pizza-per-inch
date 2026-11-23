@@ -52,6 +52,36 @@ describe('useOffers', () => {
     expect(result.current.offers[1]).toEqual(INITIAL_OFFERS[1])
   })
 
+  it('adds a pizza with a unique id to the chosen offer only', () => {
+    const { result } = renderHook(() => useOffers())
+
+    act(() => result.current.addPizza(1))
+    act(() => result.current.addPizza(1))
+
+    const ids = result.current.offers[0].pizzas.map((p) => p.id)
+    expect(ids).toHaveLength(3)
+    expect(new Set(ids).size).toBe(3)
+    expect(result.current.offers[1]).toEqual(INITIAL_OFFERS[1])
+  })
+
+  it('removes the chosen pizza from an offer with several', () => {
+    const { result } = renderHook(() => useOffers())
+    act(() => result.current.addPizza(1))
+    const [first, added] = result.current.offers[0].pizzas
+
+    act(() => result.current.removePizza(1, first.id))
+
+    expect(result.current.offers[0].pizzas).toEqual([added])
+  })
+
+  it('keeps the last pizza of an offer', () => {
+    const { result } = renderHook(() => useOffers())
+
+    act(() => result.current.removePizza(1, 1))
+
+    expect(result.current.offers[0].pizzas).toHaveLength(1)
+  })
+
   it('removes the chosen offer', () => {
     const { result } = renderHook(() => useOffers())
 

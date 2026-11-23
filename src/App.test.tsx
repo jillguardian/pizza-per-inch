@@ -1,10 +1,17 @@
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import App from './App'
 import { renderWithMantine } from './test/render'
 
 describe('App', () => {
+  it('explains that a card is one offer, a single pizza or a bundle', () => {
+    renderWithMantine(<App />)
+    expect(
+      screen.getByText('Each card is one offer: a single pizza or a bundle, with one price.'),
+    ).toBeTruthy()
+  })
+
   it('starts with two offers to compare', () => {
     renderWithMantine(<App />)
     expect(screen.getAllByLabelText('Name')).toHaveLength(2)
@@ -16,7 +23,7 @@ describe('App', () => {
     await userEvent.click(screen.getByRole('button', { name: '+ Add offer' }))
     expect(screen.getAllByLabelText('Name')).toHaveLength(3)
 
-    await userEvent.click(screen.getAllByRole('button', { name: 'Remove' })[0])
+    await userEvent.click(screen.getAllByRole('button', { name: 'Remove offer' })[0])
     expect(screen.getAllByLabelText('Name')).toHaveLength(2)
   })
 
@@ -34,5 +41,29 @@ describe('App', () => {
     await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Show price per' }), 'cm')
 
     expect(screen.getAllByText(/ \/ cm²$/)).toHaveLength(2)
+  })
+
+  it('adds a pizza to an offer and selects it', async () => {
+    renderWithMantine(<App />)
+    const offer = screen.getAllByLabelText<HTMLInputElement>('Name')[0].closest('section')
+    if (!offer) throw new Error('Expected the offer card')
+    expect(within(offer).getByText('$0.1146 / in²')).toBeTruthy()
+
+    await userEvent.click(within(offer).getByRole('button', { name: 'Add pizza' }))
+
+    expect(within(offer).getByText('Pizza 2 of 2')).toBeTruthy()
+    expect(within(offer).getByText(/ \/ in²$/).textContent).not.toBe('$0.1146 / in²')
+  })
+
+  it('keeps the last pizza and goes back to a single pizza when one is removed', async () => {
+    renderWithMantine(<App />)
+    const offer = screen.getAllByLabelText<HTMLInputElement>('Name')[0].closest('section')
+    if (!offer) throw new Error('Expected the offer card')
+    await userEvent.click(within(offer).getByRole('button', { name: 'Add pizza' }))
+
+    await userEvent.click(within(offer).getByRole('button', { name: 'Remove pizza' }))
+
+    expect(within(offer).queryByRole('button', { name: 'Next pizza' })).toBeNull()
+    expect(within(offer).getByText('$0.1146 / in²')).toBeTruthy()
   })
 })

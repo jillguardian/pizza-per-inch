@@ -11,7 +11,8 @@ import { outline, type SizeUnit } from './lib/pizza'
 const DEFAULT_CURRENCY = detectLocaleCurrency() ?? 'USD'
 
 export default function App(): ReactElement {
-  const { offers, addOffer, updateOffer, updatePizza, removeOffer } = useOffers()
+  const { offers, addOffer, updateOffer, updatePizza, addPizza, removePizza, removeOffer } =
+    useOffers()
   const [currency, setCurrency] = useState(DEFAULT_CURRENCY)
   const [priceUnit, setPriceUnit] = useState<SizeUnit>('in')
 
@@ -31,10 +32,13 @@ export default function App(): ReactElement {
   })
 
   return (
-    <Container component="main" size="md" py="md">
-      <Title order={1}>🍕 Pizza per Inch</Title>
-      <Text size="lg" c="dimmed" mb="md">
-        Compare pizza prices and sizes to find the best deal.
+    <Container component="main" size="lg" py="md">
+      <Title order={1} mb="xs">
+        🍕 Pizza per Inch
+      </Title>
+      <Text size="lg" c="dimmed" mb="md" className="subtitle">
+        <span>Compare pizza prices and sizes to find the best deal.</span>{' '}
+        <span>Each card is one offer: a single pizza or a bundle, with one price.</span>
       </Text>
 
       <Toolbar
@@ -57,6 +61,8 @@ export default function App(): ReactElement {
             maxSizeInches={maxSizeInches}
             onChange={(changes) => updateOffer(offer.id, changes)}
             onPizzaChange={(pizzaId, changes) => updatePizza(offer.id, pizzaId, changes)}
+            onAddPizza={() => addPizza(offer.id)}
+            onRemovePizza={(pizzaId) => removePizza(offer.id, pizzaId)}
             onRemove={() => removeOffer(offer.id)}
           />
         ))}

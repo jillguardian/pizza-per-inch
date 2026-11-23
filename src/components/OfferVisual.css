@@ -1,0 +1,26 @@
+.offer-visual {
+  position: relative;
+  height: 158px;
+}
+
+.picture {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.arrow {
+  position: absolute;
+  /* Half of the 158px picture area minus half of the 32px button. Not a transform, because
+     Mantine moves a pressed button with its own transform and the arrow would jump. */
+  top: 63px;
+}
+
+.arrow.previous {
+  left: 0;
+}
+
+.arrow.next {
+  right: 0;
+}

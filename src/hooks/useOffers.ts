@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { createOffer, INITIAL_OFFERS, type Offer } from '../lib/offer'
-import type { Pizza } from '../lib/pizza'
+import { createPizza, type Pizza } from '../lib/pizza'
 
 type OfferChanges = Partial<Pick<Offer, 'name' | 'notes' | 'price'>>
 
@@ -9,6 +9,8 @@ interface UseOffers {
   addOffer: () => void
   updateOffer: (id: number, changes: OfferChanges) => void
   updatePizza: (offerId: number, pizzaId: number, changes: Partial<Pizza>) => void
+  addPizza: (offerId: number) => void
+  removePizza: (offerId: number, pizzaId: number) => void
   removeOffer: (id: number) => void
 }
 
@@ -39,9 +41,31 @@ export function useOffers(): UseOffers {
     )
   }
 
+  // Pizza ids only need to be unique inside their offer.
+  function addPizza(offerId: number): void {
+    setOffers((current) =>
+      current.map((offer) => {
+        if (offer.id !== offerId) return offer
+        const nextPizzaId = Math.max(0, ...offer.pizzas.map((p) => p.id)) + 1
+        return { ...offer, pizzas: [...offer.pizzas, createPizza(nextPizzaId)] }
+      }),
+    )
+  }
+
+  // An offer always keeps at least one pizza.
+  function removePizza(offerId: number, pizzaId: number): void {
+    setOffers((current) =>
+      current.map((offer) =>
+        offer.id === offerId && offer.pizzas.length > 1
+          ? { ...offer, pizzas: offer.pizzas.filter((p) => p.id !== pizzaId) }
+          : offer,
+      ),
+    )
+  }
+
   function removeOffer(id: number): void {
     setOffers((current) => current.filter((o) => o.id !== id))
   }
 
-  return { offers, addOffer, updateOffer, updatePizza, removeOffer }
+  return { offers, addOffer, updateOffer, updatePizza, addPizza, removePizza, removeOffer }
 }
