@@ -17,6 +17,9 @@ interface UseOffers {
 export function useOffers(): UseOffers {
   const [offers, setOffers] = useState<Offer[]>(INITIAL_OFFERS)
   const nextId = useRef(Math.max(...INITIAL_OFFERS.map((offer) => offer.id)) + 1)
+  const nextPizzaId = useRef(
+    Math.max(...INITIAL_OFFERS.flatMap((offer) => offer.pizzas.map((pizza) => pizza.id))) + 1,
+  )
 
   function addOffer(): void {
     const offer = createOffer(nextId.current)
@@ -41,14 +44,14 @@ export function useOffers(): UseOffers {
     )
   }
 
-  // Pizza ids only need to be unique inside their offer.
+  // Ids only go up, so a removed pizza's id is never given to a new one.
   function addPizza(offerId: number): void {
+    const pizza = createPizza(nextPizzaId.current)
+    nextPizzaId.current += 1
     setOffers((current) =>
-      current.map((offer) => {
-        if (offer.id !== offerId) return offer
-        const nextPizzaId = Math.max(0, ...offer.pizzas.map((p) => p.id)) + 1
-        return { ...offer, pizzas: [...offer.pizzas, createPizza(nextPizzaId)] }
-      }),
+      current.map((offer) =>
+        offer.id === offerId ? { ...offer, pizzas: [...offer.pizzas, pizza] } : offer,
+      ),
     )
   }
 
