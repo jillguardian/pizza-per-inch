@@ -3,17 +3,21 @@ import {
   Badge,
   Card,
   Group,
-  NativeSelect,
   NumberInput,
+  Paper,
   Stack,
   Text,
   Textarea,
   TextInput,
+  VisuallyHidden,
 } from '@mantine/core'
-import type { ReactElement } from 'react'
+import { useState, type ReactElement } from 'react'
 import { pricePerSquareUnit, type Offer, type OfferRank } from '../lib/offer'
-import { outline, type Pizza, type PizzaShape, type SizeUnit } from '../lib/pizza'
-import { PizzaVisual } from './PizzaVisual'
+import type { Pizza, SizeUnit } from '../lib/pizza'
+import { OfferVisual } from './OfferVisual'
+import { PizzaFields } from './PizzaFields'
+import { rankColor } from './rankColor'
+import { toNumber } from './toNumber'
 import { TrashIcon } from './TrashIcon'
 import './OfferCard.css'
 
@@ -26,23 +30,11 @@ interface OfferCardProps {
   maxSizeInches: number
   onChange: (changes: Partial<Pick<Offer, 'name' | 'notes' | 'price'>>) => void
   onPizzaChange: (pizzaId: number, changes: Partial<Pizza>) => void
+  onAddPizza: () => void
+  onRemovePizza: (pizzaId: number) => void
   onRemove: () => void
 }
 
-const SIZE_UNIT_OPTIONS = ['in', 'cm']
-const SHAPE_OPTIONS = [
-  { value: 'round', label: 'Round' },
-  { value: 'rectangular', label: 'Rectangle' },
-]
-
-// Mantine reports partial input such as "." as a string, which Number() turns into NaN.
-function toNumber(value: number | string): number {
-  const number = Number(value)
-  return Number.isFinite(number) ? number : 0
-}
-
-// The number fields are uncontrolled (defaultValue) so Mantine owns the typed text,
-// including partial input like "0." and cleared fields.
 export function OfferCard({
   offer,
   currency,
@@ -52,17 +44,34 @@ export function OfferCard({
   maxSizeInches,
   onChange,
   onPizzaChange,
+  onAddPizza,
+  onRemovePizza,
   onRemove,
 }: Readonly<OfferCardProps>): ReactElement {
-  // An offer holds one pizza until the card can list several.
-  const pizza = offer.pizzas[0]
   const unitPrice = pricePerSquareUnit(offer, priceUnit)
   const isBest = rank?.rank === 1
-  const visualOutline = outline(pizza, 'in')
-  const visualLabel =
-    pizza.shape === 'round'
-      ? `${pizza.diameter} ${pizza.unit} pizza`
-      : `${pizza.width} × ${pizza.length} ${pizza.unit} rectangular pizza`
+  const [selectedIndex, setSelectedIndex] = useState(0)
+  // A removed pizza can leave the selection past the end.
+  const index = Math.min(selectedIndex, offer.pizzas.length - 1)
+  const pizza = offer.pizzas[index]
+
+  // The new pizza is appended, so it will be the last one.
+  function handleAddPizza(): void {
+    onAddPizza()
+    setSelectedIndex(offer.pizzas.length)
+  }
+
+  const fields = (
+    <PizzaFields
+      key={pizza.id}
+      pizza={pizza}
+      index={index}
+      count={offer.pizzas.length}
+      onChange={(changes) => onPizzaChange(pizza.id, changes)}
+      onAdd={handleAddPizza}
+      onRemove={() => onRemovePizza(pizza.id)}
+    />
+  )
 
   return (
     <Card
@@ -72,103 +81,74 @@ export function OfferCard({
       radius="md"
       className={isBest ? 'offer best' : 'offer'}
     >
-      {rank && (
-        <Badge color={isBest ? 'green' : 'gray'} className="rank">
-          {isBest ? `#${rank.rank} Best value` : `#${rank.rank}`}
-        </Badge>
-      )}
-      <Stack gap="xs">
-        <div className="visual">
-          <PizzaVisual
-            shape={pizza.shape}
-            width={visualOutline.width}
-            length={visualOutline.length}
-            maxSize={maxSizeInches}
-            label={visualLabel}
-          />
-        </div>
-        <TextInput
-          aria-label="Name"
-          value={offer.name}
-          onChange={(event) => onChange({ name: event.currentTarget.value })}
-        />
-        <Group gap="xs" wrap="nowrap">
-          <NativeSelect
-            aria-label="Shape"
-            data={SHAPE_OPTIONS}
-            value={pizza.shape}
-            onChange={(event) =>
-              onPizzaChange(pizza.id, { shape: event.currentTarget.value as PizzaShape })
-            }
-            style={{ flex: 1 }}
-          />
-          <ActionIcon
-            variant="light"
-            color="red"
-            size={36}
-            aria-label="Remove"
-            title="Remove"
-            onClick={onRemove}
-          >
-            <TrashIcon />
-          </ActionIcon>
-        </Group>
-        <Group key={pizza.id} gap="xs" align="flex-end" wrap="nowrap">
-          {pizza.shape === 'round' ? (
-            <NumberInput
-              label="Diameter"
-              min={0}
-              allowNegative={false}
-              allowLeadingZeros={false}
-              hideControls
-              defaultValue={pizza.diameter}
-              onChange={(value) => onPizzaChange(pizza.id, { diameter: toNumber(value) })}
-              style={{ flex: 1 }}
+      <Stack gap="md">
+        <Stack gap="xs">
+          <Group gap="xs" wrap="nowrap">
+            <TextInput
+              aria-label="Name"
+              value={offer.name}
+              onChange={(event) => onChange({ name: event.currentTarget.value })}
+              style={{ flex: 1, minWidth: 0 }}
             />
-          ) : (
-            <>
-              <NumberInput
-                label="Width"
-                min={0}
-                allowNegative={false}
-                allowLeadingZeros={false}
-                hideControls
-                defaultValue={pizza.width}
-                onChange={(value) => onPizzaChange(pizza.id, { width: toNumber(value) })}
-                style={{ flex: 1 }}
-              />
-              <NumberInput
-                label="Length"
-                min={0}
-                allowNegative={false}
-                allowLeadingZeros={false}
-                hideControls
-                defaultValue={pizza.length}
-                onChange={(value) => onPizzaChange(pizza.id, { length: toNumber(value) })}
-                style={{ flex: 1 }}
-              />
-            </>
-          )}
-          <NativeSelect
-            aria-label="Size unit"
-            data={SIZE_UNIT_OPTIONS}
-            value={pizza.unit}
-            onChange={(event) =>
-              onPizzaChange(pizza.id, { unit: event.currentTarget.value as SizeUnit })
-            }
-            w={72}
+            <ActionIcon
+              variant="light"
+              color="red"
+              size={36}
+              aria-label="Remove offer"
+              title="Remove offer"
+              onClick={onRemove}
+            >
+              <TrashIcon />
+            </ActionIcon>
+          </Group>
+          <NumberInput
+            label={`Price (${currency})`}
+            description="What you pay for the whole offer."
+            min={0}
+            allowNegative={false}
+            allowLeadingZeros={false}
+            decimalScale={2}
+            hideControls
+            defaultValue={offer.price}
+            onChange={(value) => onChange({ price: toNumber(value) })}
           />
-        </Group>
-        <NumberInput
-          label={`Price (${currency})`}
-          min={0}
-          allowNegative={false}
-          allowLeadingZeros={false}
-          decimalScale={2}
-          hideControls
-          defaultValue={offer.price}
-          onChange={(value) => onChange({ price: toNumber(value) })}
-        />
+          <Group justify="space-between" wrap="nowrap" mih={22}>
+            <Text fw={700}>
+              {unitPrice === null ? '—' : `${priceFormat.format(unitPrice)} / ${priceUnit}²`}
+            </Text>
+            {rank && (
+              <Text size="sm" fw={isBest ? 700 : 400} c={isBest ? 'green' : 'dimmed'}>
+                {isBest
+                  ? 'Best value'
+                  : `+${Math.max(1, Math.round(rank.percentAboveBest))}% vs best`}
+              </Text>
+            )}
+          </Group>
+        </Stack>
+        <Paper withBorder radius="md" p="sm" className="pizza-box">
+          <Stack gap="md">
+            <div className="visual-frame">
+              {rank && (
+                <Badge
+                  size="lg"
+                  color={rankColor(rank.rank)}
+                  title={isBest ? `Rank ${rank.rank}, best value` : `Rank ${rank.rank}`}
+                  className="rank"
+                >
+                  <VisuallyHidden>Rank </VisuallyHidden>#{rank.rank}
+                </Badge>
+              )}
+              <OfferVisual
+                pizza={pizza}
+                maxSizeInches={maxSizeInches}
+                index={index}
+                count={offer.pizzas.length}
+                onSelect={setSelectedIndex}
+              />
+            </div>
+            {fields}
+          </Stack>
+        </Paper>
         <Textarea
           label="Notes"
           rows={2}
@@ -176,16 +156,6 @@ export function OfferCard({
           value={offer.notes}
           onChange={(event) => onChange({ notes: event.currentTarget.value })}
         />
-        <Group justify="space-between" wrap="nowrap" mih={22}>
-          <Text fw={700}>
-            {unitPrice === null ? '—' : `${priceFormat.format(unitPrice)} / ${priceUnit}²`}
-          </Text>
-          {rank && !isBest && (
-            <Text size="sm" c="dimmed">
-              +{Math.max(1, Math.round(rank.percentAboveBest))}% vs best
-            </Text>
-          )}
-        </Group>
       </Stack>
     </Card>
   )

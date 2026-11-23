@@ -14,7 +14,7 @@ interface PizzaVisualProps {
   label: string
 }
 
-const MAX_SIZE_PX = 180
+const MAX_SIZE_PX = 150
 const MIN_SIZE_PX = 20
 const CRUST_WIDTH = 6
 const PEPPERONI_COLOR = '#c0392b'

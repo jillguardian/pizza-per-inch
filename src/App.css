@@ -1,6 +1,19 @@
 .offers {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  /* As many columns as fit, each at least 340px, or the full width on a narrower screen. */
+  grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr));
   gap: 1rem;
+  align-items: start;
   margin-bottom: 1rem;
+}
+
+/* Two sentences on separate lines on wide screens, one paragraph on narrow ones. */
+.subtitle span {
+  display: block;
+}
+
+@media (max-width: 640px) {
+  .subtitle span {
+    display: inline;
+  }
 }

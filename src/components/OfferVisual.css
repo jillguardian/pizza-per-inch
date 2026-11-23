@@ -1,0 +1,29 @@
+.offer-visual {
+  position: relative;
+  height: 158px;
+}
+
+.picture {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.arrow {
+  position: absolute;
+  /* Centered by auto margins, so no arithmetic and no transform (Mantine moves a pressed
+     button with its own transform and the arrow would jump). */
+  top: 0;
+  bottom: 0;
+  margin-block: auto;
+  height: 32px;
+}
+
+.arrow.previous {
+  left: 0;
+}
+
+.arrow.next {
+  right: 0;
+}

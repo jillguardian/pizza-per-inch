@@ -2,19 +2,28 @@
   border-color: var(--mantine-color-green-6);
 }
 
-.visual {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 190px;
-}
-
 .offer textarea {
   overflow-y: scroll;
 }
 
+.visual-frame {
+  position: relative;
+}
+
 .rank {
   position: absolute;
-  top: var(--mantine-spacing-sm);
-  right: var(--mantine-spacing-sm);
+  top: 0;
+  right: 0;
+  z-index: 1;
+}
+
+/* The pizza and its fields sit in a panel of their own, inside the offer. */
+.pizza-box {
+  background: var(--mantine-color-default-hover);
+}
+
+/* A disabled Mantine button loses its border and looks shorter than its neighbor. */
+.pizza-actions button:disabled,
+.pizza-actions button[data-disabled] {
+  border: 1px solid var(--mantine-color-default-border);
 }
