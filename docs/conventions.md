@@ -70,7 +70,7 @@ When splitting:
 
 The `Default branch` ruleset (Settings -> Rules) protects `main`:
 
-- The `check` CI job must pass, and the branch must be up to date. The `dependency-review` job should be required too (it only fails on vulnerabilities the PR itself introduces).
+- The `check` CI job must pass, and the branch must be up to date. The `dependency-review` job must pass too (it only fails on vulnerabilities the PR itself introduces).
 - Conversations must be resolved before merging.
 - No required approving reviews: this is a solo repo, and an author can't approve their own PR. The review is `/code-review`, whose resolved threads are the record.
 - Linear history; no force-push or deletion.
