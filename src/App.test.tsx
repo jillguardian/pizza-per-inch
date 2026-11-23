@@ -1,16 +1,17 @@
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import App from './App'
+import { renderWithMantine } from './test/render'
 
 describe('App', () => {
   it('starts with two pizzas to compare', () => {
-    render(<App />)
+    renderWithMantine(<App />)
     expect(screen.getAllByLabelText('Name')).toHaveLength(2)
   })
 
   it('adds and removes pizzas', async () => {
-    render(<App />)
+    renderWithMantine(<App />)
 
     await userEvent.click(screen.getByRole('button', { name: '+ Add pizza' }))
     expect(screen.getAllByLabelText('Name')).toHaveLength(3)
@@ -20,7 +21,7 @@ describe('App', () => {
   })
 
   it('applies the chosen currency to every pizza', async () => {
-    render(<App />)
+    renderWithMantine(<App />)
 
     await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Currency' }), 'EUR')
 
@@ -28,7 +29,7 @@ describe('App', () => {
   })
 
   it('shows prices in the chosen area unit', async () => {
-    render(<App />)
+    renderWithMantine(<App />)
 
     await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Show price per' }), 'cm')
 

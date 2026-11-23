@@ -1,6 +1,17 @@
+import {
+  Badge,
+  Button,
+  Card,
+  Group,
+  NativeSelect,
+  NumberInput,
+  Stack,
+  Text,
+  Textarea,
+  TextInput,
+} from '@mantine/core'
 import type { ReactElement } from 'react'
 import { convertLength, pricePerSquareUnit, type Pizza, type SizeUnit } from '../lib/pizza'
-import { NumberInput } from './NumberInput'
 import { PizzaVisual } from './PizzaVisual'
 import './PizzaCard.css'
 
@@ -15,6 +26,16 @@ interface PizzaCardProps {
   onRemove: () => void
 }
 
+const SIZE_UNIT_OPTIONS = ['in', 'cm']
+
+// Mantine reports partial input such as "." as a string, which Number() turns into NaN.
+function toNumber(value: number | string): number {
+  const number = Number(value)
+  return Number.isFinite(number) ? number : 0
+}
+
+// The number fields are uncontrolled (defaultValue) so Mantine owns the typed text,
+// including partial input like "0." and cleared fields.
 export function PizzaCard({
   pizza,
   currency,
@@ -28,50 +49,72 @@ export function PizzaCard({
   const unitPrice = pricePerSquareUnit(pizza, priceUnit)
 
   return (
-    <section className={isBest ? 'pizza best' : 'pizza'}>
-      <div className="visual">
-        <PizzaVisual
-          diameter={convertLength(pizza.diameter, pizza.unit, 'in')}
-          maxDiameter={maxDiameterInches}
-          label={`${pizza.diameter} ${pizza.unit} pizza`}
+    <Card
+      component="section"
+      withBorder
+      padding="md"
+      radius="md"
+      className={isBest ? 'pizza best' : 'pizza'}
+    >
+      <Stack gap="xs">
+        <div className="visual">
+          <PizzaVisual
+            diameter={convertLength(pizza.diameter, pizza.unit, 'in')}
+            maxDiameter={maxDiameterInches}
+            label={`${pizza.diameter} ${pizza.unit} pizza`}
+          />
+        </div>
+        <TextInput
+          aria-label="Name"
+          value={pizza.name}
+          onChange={(event) => onChange({ name: event.currentTarget.value })}
         />
-      </div>
-      <input
-        aria-label="Name"
-        value={pizza.name}
-        onChange={(e) => onChange({ name: e.target.value })}
-      />
-      <label>
-        Diameter
-        <span className="diameter">
-          <NumberInput value={pizza.diameter} onChange={(diameter) => onChange({ diameter })} />
-          <select
+        <Group gap="xs" align="flex-end" wrap="nowrap">
+          <NumberInput
+            label="Diameter"
+            min={0}
+            allowNegative={false}
+            allowLeadingZeros={false}
+            hideControls
+            defaultValue={pizza.diameter}
+            onChange={(value) => onChange({ diameter: toNumber(value) })}
+            style={{ flex: 1 }}
+          />
+          <NativeSelect
             aria-label="Diameter unit"
+            data={SIZE_UNIT_OPTIONS}
             value={pizza.unit}
-            onChange={(e) => onChange({ unit: e.target.value as SizeUnit })}
-          >
-            <option value="in">in</option>
-            <option value="cm">cm</option>
-          </select>
-        </span>
-      </label>
-      <label>
-        Price ({currency})
-        <NumberInput step="0.01" value={pizza.price} onChange={(price) => onChange({ price })} />
-      </label>
-      <label>
-        Notes
-        <textarea
-          rows={2}
-          value={pizza.notes}
-          onChange={(e) => onChange({ notes: e.target.value })}
+            onChange={(event) => onChange({ unit: event.currentTarget.value as SizeUnit })}
+            w={72}
+          />
+        </Group>
+        <NumberInput
+          label={`Price (${currency})`}
+          min={0}
+          allowNegative={false}
+          allowLeadingZeros={false}
+          decimalScale={2}
+          hideControls
+          defaultValue={pizza.price}
+          onChange={(value) => onChange({ price: toNumber(value) })}
         />
-      </label>
-      <p className="result">
-        {unitPrice === null ? '—' : `${priceFormat.format(unitPrice)} / ${priceUnit}²`}
-      </p>
-      <p className={isBest ? 'badge' : 'badge reserved'}>Best value</p>
-      <button onClick={onRemove}>Remove</button>
-    </section>
+        <Textarea
+          label="Notes"
+          rows={2}
+          resize="none"
+          value={pizza.notes}
+          onChange={(event) => onChange({ notes: event.currentTarget.value })}
+        />
+        <Text fw={700}>
+          {unitPrice === null ? '—' : `${priceFormat.format(unitPrice)} / ${priceUnit}²`}
+        </Text>
+        <Badge color="green" w="fit-content" className={isBest ? undefined : 'reserved'}>
+          Best value
+        </Badge>
+        <Button variant="light" color="red" onClick={onRemove}>
+          Remove
+        </Button>
+      </Stack>
+    </Card>
   )
 }

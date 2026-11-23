@@ -1,8 +1,9 @@
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi, type Mock } from 'vitest'
 import type { Pizza } from '../lib/pizza'
 import { PizzaCard } from './PizzaCard'
+import { renderWithMantine } from '../test/render'
 
 const pizza: Pizza = { id: 1, name: 'Small', notes: '', diameter: 10, unit: 'in', price: 10 }
 
@@ -13,7 +14,7 @@ interface CardHandlers {
 
 function renderCard(overrides: Partial<Pizza> = {}): CardHandlers {
   const handlers = { onChange: vi.fn(), onRemove: vi.fn() }
-  render(
+  renderWithMantine(
     <PizzaCard
       pizza={{ ...pizza, ...overrides }}
       currency="USD"
@@ -61,7 +62,7 @@ describe('PizzaCard', () => {
     await userEvent.selectOptions(screen.getByLabelText('Diameter unit'), 'cm')
     expect(onChange).toHaveBeenLastCalledWith({ unit: 'cm' })
 
-    const diameter = screen.getByRole('spinbutton', { name: /Diameter/ })
+    const diameter = screen.getByRole('textbox', { name: 'Diameter' })
     await userEvent.clear(diameter)
     await userEvent.type(diameter, '7')
     expect(onChange).toHaveBeenLastCalledWith({ diameter: 7 })
@@ -70,6 +71,44 @@ describe('PizzaCard', () => {
     await userEvent.clear(price)
     await userEvent.type(price, '8')
     expect(onChange).toHaveBeenLastCalledWith({ price: 8 })
+  })
+
+  it('does not leave a leading zero after clearing a number field', async () => {
+    renderCard()
+    const diameter = screen.getByRole<HTMLInputElement>('textbox', { name: 'Diameter' })
+
+    await userEvent.clear(diameter)
+    await userEvent.type(diameter, '05')
+
+    expect(diameter.value).toBe('5')
+  })
+
+  it('shows the current diameter and price', () => {
+    renderCard()
+    expect(screen.getByRole<HTMLInputElement>('textbox', { name: 'Diameter' }).value).toBe('10')
+    expect(screen.getByRole<HTMLInputElement>('textbox', { name: 'Price (USD)' }).value).toBe('10')
+  })
+
+  it('reports decimals and treats a cleared field as zero', async () => {
+    const { onChange } = renderCard()
+    const price = screen.getByRole('textbox', { name: 'Price (USD)' })
+
+    await userEvent.clear(price)
+    expect(onChange).toHaveBeenLastCalledWith({ price: 0 })
+
+    await userEvent.type(price, '7.5')
+    expect(onChange).toHaveBeenLastCalledWith({ price: 7.5 })
+  })
+
+  it('never reports NaN for partial input', async () => {
+    const { onChange } = renderCard()
+    const diameter = screen.getByRole('textbox', { name: 'Diameter' })
+
+    await userEvent.clear(diameter)
+    await userEvent.type(diameter, '.')
+
+    const reported = onChange.mock.calls.map(([changes]) => changes.diameter)
+    expect(reported.every((value) => Number.isFinite(value))).toBe(true)
   })
 
   it('asks to be removed', async () => {

@@ -1,7 +1,8 @@
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi, type Mock } from 'vitest'
 import { Toolbar } from './Toolbar'
+import { renderWithMantine } from '../test/render'
 
 interface ToolbarHandlers {
   onCurrencyChange: Mock
@@ -15,7 +16,7 @@ function renderToolbar(overrides: Partial<Parameters<typeof Toolbar>[0]> = {}): 
     onPriceUnitChange: vi.fn(),
     onAddPizza: vi.fn(),
   }
-  render(<Toolbar currency="USD" priceUnit="in" {...handlers} {...overrides} />)
+  renderWithMantine(<Toolbar currency="USD" priceUnit="in" {...handlers} {...overrides} />)
   return handlers
 }
 
