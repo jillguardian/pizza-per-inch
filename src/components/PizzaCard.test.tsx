@@ -5,7 +5,17 @@ import type { Pizza, PizzaRank } from '../lib/pizza'
 import { PizzaCard } from './PizzaCard'
 import { renderWithMantine } from '../test/render'
 
-const pizza: Pizza = { id: 1, name: 'Small', notes: '', diameter: 10, unit: 'in', price: 10 }
+const pizza: Pizza = {
+  id: 1,
+  name: 'Small',
+  notes: '',
+  shape: 'round',
+  diameter: 10,
+  width: 12,
+  length: 16,
+  unit: 'in',
+  price: 10,
+}
 
 interface CardHandlers {
   onChange: Mock
@@ -27,7 +37,7 @@ function renderCard(overrides: Partial<Pizza> = {}, rank: PizzaRank | null = nul
         })
       }
       rank={rank}
-      maxDiameterInches={16}
+      maxSizeInches={16}
       {...handlers}
     />,
   )
@@ -35,6 +45,44 @@ function renderCard(overrides: Partial<Pizza> = {}, rank: PizzaRank | null = nul
 }
 
 describe('PizzaCard', () => {
+  it('asks for a diameter on a round pizza', () => {
+    renderCard()
+    expect(screen.getByRole('textbox', { name: 'Diameter' })).toBeTruthy()
+    expect(screen.queryByRole('textbox', { name: 'Width' })).toBeNull()
+  })
+
+  it('asks for a width and length on a rectangular pizza', () => {
+    renderCard({ shape: 'rectangular' })
+    expect(screen.getByRole<HTMLInputElement>('textbox', { name: 'Width' }).value).toBe('12')
+    expect(screen.getByRole<HTMLInputElement>('textbox', { name: 'Length' }).value).toBe('16')
+    expect(screen.queryByRole('textbox', { name: 'Diameter' })).toBeNull()
+  })
+
+  it('reports the chosen shape', async () => {
+    const { onChange } = renderCard()
+    await userEvent.selectOptions(screen.getByLabelText('Shape'), 'rectangular')
+    expect(onChange).toHaveBeenLastCalledWith({ shape: 'rectangular' })
+  })
+
+  it('reports width and length changes', async () => {
+    const { onChange } = renderCard({ shape: 'rectangular' })
+
+    const width = screen.getByRole('textbox', { name: 'Width' })
+    await userEvent.clear(width)
+    await userEvent.type(width, '9')
+    expect(onChange).toHaveBeenLastCalledWith({ width: 9 })
+
+    const length = screen.getByRole('textbox', { name: 'Length' })
+    await userEvent.clear(length)
+    await userEvent.type(length, '14')
+    expect(onChange).toHaveBeenLastCalledWith({ length: 14 })
+  })
+
+  it('shows the price per area of a rectangular pizza', () => {
+    renderCard({ shape: 'rectangular', width: 10, length: 10 })
+    expect(screen.getByText('$0.1000 / in²')).toBeTruthy()
+  })
+
   it('marks the first rank as best value', () => {
     renderCard({}, { rank: 1, percentAboveBest: 0 })
     expect(screen.getByText('#1 Best value')).toBeTruthy()
@@ -76,7 +124,7 @@ describe('PizzaCard', () => {
     await userEvent.type(screen.getByLabelText('Notes'), 'x')
     expect(onChange).toHaveBeenLastCalledWith({ notes: 'x' })
 
-    await userEvent.selectOptions(screen.getByLabelText('Diameter unit'), 'cm')
+    await userEvent.selectOptions(screen.getByLabelText('Size unit'), 'cm')
     expect(onChange).toHaveBeenLastCalledWith({ unit: 'cm' })
 
     const diameter = screen.getByRole('textbox', { name: 'Diameter' })
