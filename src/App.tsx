@@ -14,9 +14,7 @@ export default function App(): ReactElement {
   const [priceUnit, setPriceUnit] = useState<SizeUnit>('in')
 
   const bestValueId = findBestValueId(pizzas)
-  const maxDiameterInches = Math.max(
-    ...pizzas.map((p) => convertLength(p.diameter, p.unit, 'in')),
-  )
+  const maxDiameterInches = Math.max(...pizzas.map((p) => convertLength(p.diameter, p.unit, 'in')))
   const priceFormat = new Intl.NumberFormat(undefined, {
     style: 'currency',
     currency,

@@ -5,24 +5,26 @@ Rules for working in this repo, and why they exist. Add new ones here, not in `C
 ## Dependencies
 
 - **Pin exact versions** (no `^` or `~`). `.npmrc` sets `save-exact=true`, so `npm install <pkg>` pins automatically.
-  *Why:* upgrades happen on purpose, through reviewed Dependabot PRs, never by accident.
+  _Why:_ upgrades happen on purpose, through reviewed Dependabot PRs, never by accident.
 - **Keep `@types/node` on the same major as the Node version in the workflows** (`node-version` in `.github/workflows/`). Change them together.
-  *Why:* otherwise the type checker accepts Node APIs that don't exist in CI.
+  _Why:_ otherwise the type checker accepts Node APIs that don't exist in CI.
 - **Pin GitHub Actions to a full commit SHA** with the version in a trailing comment (`uses: actions/checkout@<sha> # v7`). Dependabot updates both.
-  *Why:* tags can be moved, so a compromised action could change what runs in CI. A SHA can't.
+  _Why:_ tags can be moved, so a compromised action could change what runs in CI. A SHA can't.
 - **Dependabot** opens weekly PRs for npm packages and GitHub Actions (`.github/dependabot.yml`). Merge them deliberately; CI must pass.
 - **Vulnerability checks:**
   - PRs: a `dependency-review` job (GitHub's Dependency Review action) fails when a PR adds or changes a dependency with a known `high` or `critical` vulnerability.
   - Weekly: `npm audit --audit-level=high` (`audit.yml`) covers advisories published for dependencies that are already in the tree. Dependabot alerts do too.
-  *Why:* the PR check only looks at what the PR changes, so it can't fail because of an unrelated, newly published advisory and can safely be required. The weekly audit catches the rest.
+    _Why:_ the PR check only looks at what the PR changes, so it can't fail because of an unrelated, newly published advisory and can safely be required. The weekly audit catches the rest.
 - Before adding a dependency, check it earns its weight. Prefer the standard library or built-in browser APIs (e.g. `Intl`).
 
 ## Code
 
+- **Format with Prettier** (`npm run format`). CI runs `npm run format:check` and fails on unformatted files. Settings are in `.prettierrc.json`: no semicolons, single quotes, 100 columns.
+  _Why:_ formatting is decided by the tool, so reviews stay about the code.
 - **Explicit return type on every function**, enforced by oxlint. React components return `ReactElement`.
-  *Why:* the type becomes part of the function's documented contract, and accidental return types can't leak.
+  _Why:_ the type becomes part of the function's documented contract, and accidental return types can't leak.
 - **Wrap component props in `Readonly<>`** (`props: Readonly<Props>`).
-  *Why:* components must never mutate their props.
+  _Why:_ components must never mutate their props.
 - **Keep `src/lib/` free of UI.** Pure logic only, so it is easy to test.
 - **Colocate tests** next to the code they cover (`foo.ts` and `foo.test.ts`). Every module with logic or behavior has one; `main.tsx` and CSS are exempt.
 - **Test behavior the way a user sees it**: Testing Library queries by role and label, `user-event` for interaction. Don't assert on class names or internals.
@@ -50,14 +52,14 @@ When splitting:
   Prefixes: `Feat`, `Fix`, `Refactor`, `Docs`, `Test`, `Upgrade`, `Chore`. Don't repeat the prefix verb in the summary (`Upgrade: React to 19`, not `Upgrade: Upgrade React`).
 - **Merging:** PRs are squash-merged (the only method the repo allows), so `main` gets one commit per PR. Its subject is the PR title, with `(#<PR number>)` added by GitHub. PR titles therefore follow the same `Prefix: Summary` format.
 - **Issue references:** put `Closes #12` in the PR description so the issue closes on merge. Keep issue numbers out of commit subjects and PR titles.
-  *Why:* GitHub appends the PR number to the squashed subject, so an issue number there would look like a second PR link.
+  _Why:_ GitHub appends the PR number to the squashed subject, so an issue number there would look like a second PR link.
 - Commits inside a branch may carry `Refs #12` in the body. The squash folds them into one commit, so this mainly helps reviewers.
 - **Branches:** `<type>/<issue-number>-<short-description>`, for example `feat/16-rank-pizzas` or `fix/5-validate-inputs`.
   - `<type>` is the lowercase commit prefix (`feat`, `fix`, `refactor`, `docs`, `test`, `upgrade`, `chore`).
   - The description is a few lowercase words joined by hyphens, under about 40 characters in total.
   - Work without an issue drops the number (`chore/bump-node`).
   - One topic per branch and PR. Branches are deleted on merge.
-  *Why the issue number:* branch names don't reach `main` after a squash, so it can't be mistaken for the PR link, and it makes the branch easy to trace back to its issue.
+    _Why the issue number:_ branch names don't reach `main` after a squash, so it can't be mistaken for the PR link, and it makes the branch easy to trace back to its issue.
 - **Rebase, don't merge.** Pull with `--rebase`. Rebasing a pushed branch needs `--force-with-lease`, never plain `--force`.
 - **Pull requests** use `.github/pull_request_template.md`. CI must pass before merging.
 - **Dependabot** commits use the `Upgrade` prefix to match this format.
