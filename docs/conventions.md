@@ -37,3 +37,21 @@ When splitting:
 - Turn the file into a folder (for example `lib/pizza/{types,area,ranking}.ts`) with an `index.ts`, so existing imports keep working.
 - Name files by domain, not `constants.ts` or `utils.ts`, which become dumping grounds.
 - A component's props type always stays in the component's file.
+
+## Git
+
+- **Commit format:** `Prefix: Short imperative summary`, for example `Fix: Grid column overflow`.
+  Prefixes: `Feat`, `Fix`, `Refactor`, `Docs`, `Test`, `Upgrade`, `Chore`. Don't repeat the prefix verb in the summary (`Upgrade: React to 19`, not `Upgrade: Upgrade React`).
+- **Merging:** PRs are squash-merged (the only method the repo allows), so `main` gets one commit per PR. Its subject is the PR title, with `(#<PR number>)` added by GitHub. PR titles therefore follow the same `Prefix: Summary` format.
+- **Issue references:** put `Closes #12` in the PR description so the issue closes on merge. Keep issue numbers out of commit subjects and PR titles.
+  *Why:* GitHub appends the PR number to the squashed subject, so an issue number there would look like a second PR link.
+- Commits inside a branch may carry `Refs #12` in the body. The squash folds them into one commit, so this mainly helps reviewers.
+- **Branches:** `<type>/<issue-number>-<short-description>`, for example `feat/16-rank-pizzas` or `fix/5-validate-inputs`.
+  - `<type>` is the lowercase commit prefix (`feat`, `fix`, `refactor`, `docs`, `test`, `upgrade`, `chore`).
+  - The description is a few lowercase words joined by hyphens, under about 40 characters in total.
+  - Work without an issue drops the number (`chore/bump-node`).
+  - One topic per branch and PR. Branches are deleted on merge.
+  *Why the issue number:* branch names don't reach `main` after a squash, so it can't be mistaken for the PR link, and it makes the branch easy to trace back to its issue.
+- **Rebase, don't merge.** Pull with `--rebase`. Rebasing a pushed branch needs `--force-with-lease`, never plain `--force`.
+- **Pull requests** use `.github/pull_request_template.md`. CI must pass before merging.
+- **Dependabot** commits use the `Upgrade` prefix to match this format.
