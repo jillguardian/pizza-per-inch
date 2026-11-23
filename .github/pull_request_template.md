@@ -19,6 +19,6 @@ Closes #
 <!-- Bundle size, load time, or runtime impact, if relevant. "N/A" otherwise. -->
 
 ## Testing
-- [ ] Tests added or updated
-- [ ] `npm test`, `npm run lint`, and `npm run build` pass
-- [ ] Checked manually in the browser (if the UI changed)
+<!-- CI runs lint, tests, build, and the audit. -->
+- [ ] Tests added or updated for the change
+- [ ] Checked manually in the browser (UI changes)
