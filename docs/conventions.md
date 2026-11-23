@@ -25,6 +25,7 @@ Rules for working in this repo, and why they exist. Add new ones here, not in `C
   _Why:_ the type becomes part of the function's documented contract, and accidental return types can't leak.
 - **Wrap component props in `Readonly<>`** (`props: Readonly<Props>`).
   _Why:_ components must never mutate their props.
+  _Not enforced by a linter:_ oxlint has no rule for React props. The closest, `typescript/prefer-readonly-parameter-types`, needs type-aware linting and flags every function parameter, not only props. This stays a review item.
 - **Keep `src/lib/` free of UI.** Pure logic only, so it is easy to test.
 - **Colocate tests** next to the code they cover (`foo.ts` and `foo.test.ts`). Every module with logic or behavior has one; `main.tsx` and CSS are exempt.
 - **Test behavior the way a user sees it**: Testing Library queries by role and label, `user-event` for interaction. Don't assert on class names or internals.
