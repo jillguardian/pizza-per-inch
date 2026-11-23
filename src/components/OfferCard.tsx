@@ -113,7 +113,7 @@ export function OfferCard({
             <TrashIcon />
           </ActionIcon>
         </Group>
-        <Group gap="xs" align="flex-end" wrap="nowrap">
+        <Group key={pizza.id} gap="xs" align="flex-end" wrap="nowrap">
           {pizza.shape === 'round' ? (
             <NumberInput
               label="Diameter"

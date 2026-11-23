@@ -1,3 +1,4 @@
+import { MantineProvider } from '@mantine/core'
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi, type Mock } from 'vitest'
@@ -180,6 +181,29 @@ describe('OfferCard', () => {
 
     const reported = onPizzaChange.mock.calls.map(([, changes]) => changes.diameter)
     expect(reported.every((value) => Number.isFinite(value))).toBe(true)
+  })
+
+  it('shows the sizes of another pizza when the pizza changes', () => {
+    const props = {
+      currency: 'USD',
+      priceUnit: 'in' as const,
+      priceFormat: new Intl.NumberFormat('en-US'),
+      rank: null,
+      maxSizeInches: 16,
+      onChange: vi.fn(),
+      onPizzaChange: vi.fn(),
+      onRemove: vi.fn(),
+    }
+    const { rerender } = renderWithMantine(<OfferCard offer={offer} {...props} />)
+    const other = { ...offer, pizzas: [{ ...pizza, id: 2, diameter: 20 }] }
+
+    rerender(
+      <MantineProvider>
+        <OfferCard offer={other} {...props} />
+      </MantineProvider>,
+    )
+
+    expect(screen.getByRole<HTMLInputElement>('textbox', { name: 'Diameter' }).value).toBe('20')
   })
 
   it('asks to be removed', async () => {
