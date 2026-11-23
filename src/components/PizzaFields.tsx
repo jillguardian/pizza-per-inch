@@ -82,7 +82,7 @@ export function PizzaFields({
         />
         <QuantityInput value={pizza.quantity} onChange={(quantity) => onChange({ quantity })} />
       </Group>
-      <Group key={pizza.id} gap="xs" align="flex-end" wrap="nowrap">
+      <Group gap="xs" align="flex-end" wrap="nowrap">
         {pizza.shape === 'round' ? (
           <NumberInput
             label="Diameter"
