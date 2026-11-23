@@ -1,3 +1,4 @@
+import { Container, Text, Title } from '@mantine/core'
 import { useState, type ReactElement } from 'react'
 import './App.css'
 import { PizzaCard } from './components/PizzaCard'
@@ -22,9 +23,11 @@ export default function App(): ReactElement {
   })
 
   return (
-    <main>
-      <h1>🍕 Pizza per inch</h1>
-      <p>Enter diameter and price. The lowest price per area wins, even across different units.</p>
+    <Container component="main" size="md" py="md">
+      <Title order={1}>🍕 Pizza per inch</Title>
+      <Text mb="md">
+        Enter diameter and price. The lowest price per area wins, even across different units.
+      </Text>
 
       <Toolbar
         currency={currency}
@@ -49,6 +52,6 @@ export default function App(): ReactElement {
           />
         ))}
       </div>
-    </main>
+    </Container>
   )
 }

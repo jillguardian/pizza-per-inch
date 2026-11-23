@@ -1,3 +1,4 @@
+import { Button, Group, NativeSelect } from '@mantine/core'
 import type { ReactElement } from 'react'
 import { listCurrencies, type Currency } from '../lib/currencies'
 import type { SizeUnit } from '../lib/pizza'
@@ -13,13 +14,19 @@ interface ToolbarProps {
   onAddPizza: () => void
 }
 
-function CurrencyOptions({ currencies }: Readonly<{ currencies: Currency[] }>): ReactElement[] {
-  return currencies.map(({ code, name }) => (
-    <option key={code} value={code}>
-      {code} – {name}
-    </option>
-  ))
+function toOptions(currencies: Currency[]): { value: string; label: string }[] {
+  return currencies.map(({ code, name }) => ({ value: code, label: `${code} – ${name}` }))
 }
+
+const CURRENCY_OPTIONS = [
+  { group: 'Common', items: toOptions(CURRENCIES.common) },
+  { group: 'All currencies', items: toOptions(CURRENCIES.other) },
+]
+
+const PRICE_UNIT_OPTIONS = [
+  { value: 'in', label: 'Square inch' },
+  { value: 'cm', label: 'Square cm' },
+]
 
 export function Toolbar({
   currency,
@@ -29,29 +36,20 @@ export function Toolbar({
   onAddPizza,
 }: Readonly<ToolbarProps>): ReactElement {
   return (
-    <div className="toolbar">
-      <div className="settings">
-        <label>
-          Currency
-          <select value={currency} onChange={(e) => onCurrencyChange(e.target.value)}>
-            <optgroup label="Common">
-              <CurrencyOptions currencies={CURRENCIES.common} />
-            </optgroup>
-            <optgroup label="All currencies">
-              <CurrencyOptions currencies={CURRENCIES.other} />
-            </optgroup>
-          </select>
-        </label>
-        <label>
-          Show price per
-          <select value={priceUnit} onChange={(e) => onPriceUnitChange(e.target.value as SizeUnit)}>
-            <option value="in">Square inch</option>
-            <option value="cm">Square cm</option>
-          </select>
-        </label>
-      </div>
-
-      <button onClick={onAddPizza}>+ Add pizza</button>
-    </div>
+    <Group className="toolbar" align="flex-end">
+      <NativeSelect
+        label="Currency"
+        data={CURRENCY_OPTIONS}
+        value={currency}
+        onChange={(event) => onCurrencyChange(event.currentTarget.value)}
+      />
+      <NativeSelect
+        label="Show price per"
+        data={PRICE_UNIT_OPTIONS}
+        value={priceUnit}
+        onChange={(event) => onPriceUnitChange(event.currentTarget.value as SizeUnit)}
+      />
+      <Button onClick={onAddPizza}>+ Add pizza</Button>
+    </Group>
   )
 }

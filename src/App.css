@@ -1,12 +1,6 @@
-main {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 1rem;
-}
-
 .pizzas {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 1rem;
   margin-bottom: 1rem;
 }

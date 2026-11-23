@@ -14,7 +14,8 @@ Static React/TypeScript app that compares pizza prices per area. No backend.
 ## Structure
 
 - `src/lib/`: pure logic with colocated tests (`pizza.ts`, `currencies.ts`)
-- `src/components/`: React components (`PizzaVisual.tsx`, SVG drawn to scale)
+- `src/components/`: React components, built with Mantine (`PizzaVisual.tsx` is plain SVG drawn to scale)
+- `src/test/`: test setup (jsdom polyfills for Mantine) and `renderWithMantine`, which component tests must use
 - `src/App.tsx`: state and page layout
 
 ## Conventions
@@ -31,4 +32,5 @@ Static React/TypeScript app that compares pizza prices per area. No backend.
 - Round pizzas only
 - No persistence
 - Currencies come from `Intl.supportedValuesOf`
-- Enhancements (square pizzas, saving, sharing, UI library) are tracked as GitHub issues.
+- UI built with Mantine (`NativeSelect` for dropdowns: simpler to test and native on phones)
+- Enhancements are tracked as GitHub issues.

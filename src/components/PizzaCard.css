@@ -1,15 +1,5 @@
-.pizza {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  width: 220px;
-  padding: 1rem;
-  border: 2px solid #ccc;
-  border-radius: 8px;
-}
-
 .pizza.best {
-  border-color: #2e9e4f;
+  border-color: var(--mantine-color-green-6);
 }
 
 .visual {
@@ -19,38 +9,10 @@
   height: 190px;
 }
 
-.pizza label {
-  display: flex;
-  flex-direction: column;
-  font-size: 0.85rem;
-}
-
 .pizza textarea {
-  resize: none;
   overflow-y: scroll;
 }
 
-.diameter {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.diameter input {
-  flex: 1;
-  min-width: 0;
-}
-
-.result {
-  font-weight: bold;
-  margin: 0;
-}
-
-.badge {
-  margin: 0;
-  color: #2e9e4f;
-  font-weight: bold;
-}
-
-.badge.reserved {
+.reserved {
   visibility: hidden;
 }

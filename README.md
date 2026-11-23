@@ -11,6 +11,7 @@ Compare pizza prices by cost per square inch (or cm²). Enter each pizza's diame
 ## Tech stack
 
 - React 19 + TypeScript
+- Mantine (UI components)
 - Vite
 - Vitest
 - oxlint
