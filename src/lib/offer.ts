@@ -25,7 +25,7 @@ export function offerArea(offer: Offer, unit: SizeUnit): number | null {
   let total = 0
   for (const pizza of offer.pizzas) {
     const area = pizzaArea(pizza, unit)
-    if (area <= 0 || pizza.quantity <= 0) return null
+    if (!(area > 0) || !(pizza.quantity > 0)) return null
     total += area * pizza.quantity
   }
   return total

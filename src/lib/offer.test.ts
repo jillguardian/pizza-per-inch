@@ -50,6 +50,11 @@ describe('offerArea', () => {
     expect(offerArea(offer(1, 25, round(16), sheet(12, 0)), 'in')).toBeNull()
   })
 
+  it('is null for NaN sizes and quantities instead of a NaN total', () => {
+    expect(offerArea(offer(1, 25, round(Number.NaN)), 'in')).toBeNull()
+    expect(offerArea(offer(1, 25, round(16, 'in', Number.NaN)), 'in')).toBeNull()
+  })
+
   it('is null for a quantity of zero or an offer without pizzas', () => {
     expect(offerArea(offer(1, 25, round(16, 'in', 0)), 'in')).toBeNull()
     expect(offerArea(offer(1, 25), 'in')).toBeNull()
