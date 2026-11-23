@@ -12,3 +12,9 @@
 .pizza textarea {
   overflow-y: scroll;
 }
+
+.rank {
+  position: absolute;
+  top: var(--mantine-spacing-sm);
+  right: var(--mantine-spacing-sm);
+}

@@ -63,6 +63,11 @@ export function PizzaCard({
       radius="md"
       className={isBest ? 'pizza best' : 'pizza'}
     >
+      {rank && (
+        <Badge color={isBest ? 'green' : 'gray'} className="rank">
+          {isBest ? `#${rank.rank} Best value` : `#${rank.rank}`}
+        </Badge>
+      )}
       <Stack gap="xs">
         <div className="visual">
           <PizzaVisual
@@ -115,18 +120,11 @@ export function PizzaCard({
         <Text fw={700}>
           {unitPrice === null ? '—' : `${priceFormat.format(unitPrice)} / ${priceUnit}²`}
         </Text>
-        <Group gap="xs" mih={22}>
-          {rank && (
-            <Badge color={isBest ? 'green' : 'gray'}>
-              {isBest ? `#${rank.rank} Best value` : `#${rank.rank}`}
-            </Badge>
-          )}
-          {rank && !isBest && (
-            <Text size="sm" c="dimmed">
-              +{Math.max(1, Math.round(rank.percentAboveBest))}% per area vs best
-            </Text>
-          )}
-        </Group>
+        <Text size="sm" c="dimmed" mih={22}>
+          {rank &&
+            !isBest &&
+            `+${Math.max(1, Math.round(rank.percentAboveBest))}% per area vs best`}
+        </Text>
         <Button variant="light" color="red" onClick={onRemove}>
           Remove
         </Button>
