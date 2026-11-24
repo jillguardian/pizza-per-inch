@@ -28,3 +28,11 @@
   background: var(--mantine-color-body);
   border-bottom: 1px solid var(--mantine-color-default-border);
 }
+
+/* On a wide screen the selects keep a natural width instead of stretching across the page. */
+@media (min-width: 48em) {
+  .toolbar-settings {
+    grid-template-columns: minmax(0, 360px) minmax(0, 180px);
+    justify-content: start;
+  }
+}
