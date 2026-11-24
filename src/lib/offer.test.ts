@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   createOffer,
   INITIAL_OFFERS,
+  isBundle,
   offerArea,
   pricePerSquareUnit,
   rankOffers,
@@ -175,5 +176,21 @@ describe('INITIAL_OFFERS', () => {
   it('are two comparable single-pizza offers', () => {
     expect(INITIAL_OFFERS).toHaveLength(2)
     expect(rankOffers(INITIAL_OFFERS).size).toBe(2)
+  })
+})
+
+describe('isBundle', () => {
+  const offerOf = (...pizzas: Pizza[]): Offer => ({ ...createOffer(1), pizzas })
+
+  it('is false for one pizza', () => {
+    expect(isBundle(offerOf(round(12)))).toBe(false)
+  })
+
+  it('is true for several different pizzas', () => {
+    expect(isBundle(offerOf(round(12), round(8)))).toBe(true)
+  })
+
+  it('is true for several of the same pizza', () => {
+    expect(isBundle(offerOf(round(12, 'in', 2)))).toBe(true)
   })
 })

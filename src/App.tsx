@@ -5,7 +5,7 @@ import { OfferCard } from './components/OfferCard'
 import { Toolbar } from './components/Toolbar'
 import { useOffers } from './hooks/useOffers'
 import { detectLocaleCurrency } from './lib/currencies'
-import { rankOffers } from './lib/offer'
+import { isBundle, rankOffers } from './lib/offer'
 import { outline, type SizeUnit } from './lib/pizza'
 
 const DEFAULT_CURRENCY = detectLocaleCurrency() ?? 'USD'
@@ -15,8 +15,11 @@ export default function App(): ReactElement {
     useOffers()
   const [currency, setCurrency] = useState(DEFAULT_CURRENCY)
   const [priceUnit, setPriceUnit] = useState<SizeUnit>('in')
+  const [bundlesChosen, setBundlesChosen] = useState(false)
 
   const ranks = rankOffers(offers)
+  const bundlesLocked = offers.some(isBundle)
+  const showBundles = bundlesChosen || bundlesLocked
   const maxSizeInches = Math.max(
     ...offers.flatMap((offer) =>
       offer.pizzas.map((pizza) => {
@@ -46,7 +49,10 @@ export default function App(): ReactElement {
         priceUnit={priceUnit}
         onCurrencyChange={setCurrency}
         onPriceUnitChange={setPriceUnit}
+        showBundles={showBundles}
+        bundlesLocked={bundlesLocked}
         onAddOffer={addOffer}
+        onBundlesChange={setBundlesChosen}
       />
 
       <div className="offers">
@@ -59,6 +65,7 @@ export default function App(): ReactElement {
             priceFormat={priceFormat}
             rank={ranks.get(offer.id) ?? null}
             maxSizeInches={maxSizeInches}
+            showBundles={showBundles}
             onChange={(changes) => updateOffer(offer.id, changes)}
             onPizzaChange={(pizzaId, changes) => updatePizza(offer.id, pizzaId, changes)}
             onAddPizza={() => addPizza(offer.id)}

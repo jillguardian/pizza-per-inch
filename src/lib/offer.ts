@@ -65,6 +65,10 @@ export const INITIAL_OFFERS: Offer[] = [
   { id: 2, name: 'Large', notes: '', price: 18, pizzas: [createPizza(1, 16)] },
 ]
 
+export function isBundle(offer: Offer): boolean {
+  return offer.pizzas.length > 1 || offer.pizzas.some((pizza) => pizza.quantity > 1)
+}
+
 export function createOffer(id: number): Offer {
   return { id, name: `Offer ${id}`, notes: '', price: 12, pizzas: [createPizza(1)] }
 }

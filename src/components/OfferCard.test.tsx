@@ -31,6 +31,7 @@ function renderCard(
   pizzaOverrides: Partial<Pizza> = {},
   rank: OfferRank | null = null,
   offerOverrides: Partial<Offer> = {},
+  showBundles = true,
 ): CardHandlers {
   const handlers = {
     onChange: vi.fn(),
@@ -53,6 +54,7 @@ function renderCard(
       }
       rank={rank}
       maxSizeInches={16}
+      showBundles={showBundles}
       {...handlers}
     />,
   )
@@ -60,6 +62,24 @@ function renderCard(
 }
 
 describe('OfferCard', () => {
+  it('hides the bundle controls when bundles are off', () => {
+    renderCard({}, null, {}, false)
+
+    expect(screen.queryByRole('button', { name: 'Add pizza' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Remove pizza' })).toBeNull()
+    expect(screen.queryByRole('textbox', { name: 'Quantity' })).toBeNull()
+    expect(screen.queryByText('What you pay for the whole offer.')).toBeNull()
+    expect(screen.getByRole('combobox', { name: 'Shape' })).toBeTruthy()
+  })
+
+  it('shows the bundle controls when bundles are on', () => {
+    renderCard()
+
+    expect(screen.getByRole('button', { name: 'Add pizza' })).toBeTruthy()
+    expect(screen.getByRole('textbox', { name: 'Quantity' })).toBeTruthy()
+    expect(screen.getByText('What you pay for the whole offer.')).toBeTruthy()
+  })
+
   it('asks for a diameter on a round pizza', () => {
     renderCard()
     expect(screen.getByRole('textbox', { name: 'Diameter' })).toBeTruthy()
@@ -202,6 +222,7 @@ describe('OfferCard', () => {
       priceFormat: new Intl.NumberFormat('en-US'),
       rank: null,
       maxSizeInches: 16,
+      showBundles: true,
       onChange: vi.fn(),
       onPizzaChange: vi.fn(),
       onAddPizza: vi.fn(),
@@ -297,6 +318,7 @@ describe('OfferCard with several pizzas', () => {
         }
         rank={null}
         maxSizeInches={16}
+        showBundles
         {...handlers}
       />,
     )
