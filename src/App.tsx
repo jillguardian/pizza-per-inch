@@ -11,8 +11,16 @@ import { outline, type SizeUnit } from './lib/pizza'
 const DEFAULT_CURRENCY = detectLocaleCurrency() ?? 'USD'
 
 export default function App(): ReactElement {
-  const { offers, addOffer, updateOffer, updatePizza, addPizza, removePizza, removeOffer } =
-    useOffers()
+  const {
+    offers,
+    addOffer,
+    updateOffer,
+    updatePizza,
+    addPizza,
+    removePizza,
+    removeOffer,
+    sortOffers,
+  } = useOffers()
   const [currency, setCurrency] = useState(DEFAULT_CURRENCY)
   const [priceUnit, setPriceUnit] = useState<SizeUnit>('in')
   const [bundlesChosen, setBundlesChosen] = useState(false)
@@ -52,6 +60,7 @@ export default function App(): ReactElement {
         showBundles={showBundles}
         bundlesLocked={bundlesLocked}
         onAddOffer={addOffer}
+        onSortOffers={sortOffers}
         onBundlesChange={setBundlesChosen}
       />
 

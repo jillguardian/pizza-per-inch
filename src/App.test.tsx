@@ -87,4 +87,28 @@ describe('App', () => {
     expect(checkbox.disabled).toBe(true)
     expect(checkbox.checked).toBe(true)
   })
+
+  describe('sorting', () => {
+    const names = (): string[] =>
+      screen.getAllByLabelText<HTMLInputElement>('Name').map((input) => input.value)
+
+    it('puts the best value first when asked', async () => {
+      renderWithMantine(<App />)
+      expect(names()).toEqual(['Small', 'Large'])
+
+      await userEvent.click(screen.getByRole('button', { name: 'Sort by value' }))
+
+      expect(names()).toEqual(['Large', 'Small'])
+    })
+
+    it('does not reorder cards while the user is typing', async () => {
+      renderWithMantine(<App />)
+      const smallPrice = screen.getAllByRole('textbox', { name: /Price/ })[0]
+
+      await userEvent.clear(smallPrice)
+      await userEvent.type(smallPrice, '1')
+
+      expect(names()).toEqual(['Small', 'Large'])
+    })
+  })
 })

@@ -6,6 +6,7 @@ import {
   offerArea,
   pricePerSquareUnit,
   rankOffers,
+  sortByRank,
   type Offer,
 } from './offer'
 import { createPizza, pizzaArea, type Pizza, type SizeUnit } from './pizza'
@@ -192,5 +193,35 @@ describe('isBundle', () => {
 
   it('is true for several of the same pizza', () => {
     expect(isBundle(offerOf(round(12, 'in', 2)))).toBe(true)
+  })
+})
+
+describe('sortByRank', () => {
+  const ids = (offers: Offer[]): number[] => offers.map((o) => o.id)
+
+  it('puts the best value first', () => {
+    const offers = [offer(1, 20, round(10)), offer(2, 9, round(10)), offer(3, 12, round(10))]
+    expect(ids(sortByRank(offers))).toEqual([2, 3, 1])
+  })
+
+  it('keeps tied offers in their current order', () => {
+    const offers = [offer(1, 12, round(10)), offer(2, 12, round(10)), offer(3, 5, round(10))]
+    expect(ids(sortByRank(offers))).toEqual([3, 1, 2])
+  })
+
+  it('puts offers without a usable size last', () => {
+    const offers = [offer(1, 12, round(0)), offer(2, 20, round(10)), offer(3, 9, round(10))]
+    expect(ids(sortByRank(offers))).toEqual([3, 2, 1])
+  })
+
+  it('leaves the order alone when there is nothing to compare', () => {
+    const offers = [offer(1, 12, round(0)), offer(2, 9, round(10))]
+    expect(ids(sortByRank(offers))).toEqual([1, 2])
+  })
+
+  it('does not change the list it is given', () => {
+    const offers = [offer(1, 20, round(10)), offer(2, 9, round(10))]
+    sortByRank(offers)
+    expect(ids(offers)).toEqual([1, 2])
   })
 })

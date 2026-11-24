@@ -60,6 +60,13 @@ export function rankOffers(offers: Offer[]): Map<number, OfferRank> {
   return ranks
 }
 
+// Best first. Offers that are not ranked go last, and offers with the same rank keep their order.
+export function sortByRank(offers: Offer[]): Offer[] {
+  const ranks = rankOffers(offers)
+  const position = (offer: Offer): number => ranks.get(offer.id)?.rank ?? Number.MAX_SAFE_INTEGER
+  return [...offers].sort((a, b) => position(a) - position(b))
+}
+
 export const INITIAL_OFFERS: Offer[] = [
   { id: 1, name: 'Small', notes: '', price: 9, pizzas: [createPizza(1, 10)] },
   { id: 2, name: 'Large', notes: '', price: 18, pizzas: [createPizza(1, 16)] },

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { createOffer, INITIAL_OFFERS, type Offer } from '../lib/offer'
+import { createOffer, INITIAL_OFFERS, sortByRank, type Offer } from '../lib/offer'
 import { createPizza, type Pizza } from '../lib/pizza'
 
 type OfferChanges = Partial<Pick<Offer, 'name' | 'notes' | 'price'>>
@@ -12,6 +12,7 @@ interface UseOffers {
   addPizza: (offerId: number) => void
   removePizza: (offerId: number, pizzaId: number) => void
   removeOffer: (id: number) => void
+  sortOffers: () => void
 }
 
 export function useOffers(): UseOffers {
@@ -70,5 +71,18 @@ export function useOffers(): UseOffers {
     setOffers((current) => current.filter((o) => o.id !== id))
   }
 
-  return { offers, addOffer, updateOffer, updatePizza, addPizza, removePizza, removeOffer }
+  function sortOffers(): void {
+    setOffers(sortByRank)
+  }
+
+  return {
+    offers,
+    addOffer,
+    updateOffer,
+    updatePizza,
+    addPizza,
+    removePizza,
+    removeOffer,
+    sortOffers,
+  }
 }

@@ -1,7 +1,39 @@
-.toolbar {
+/* The settings are chosen once, so they scroll away with the page. The two selects always share
+   a row; the checkbox joins them when there is room, and sits below them when there is not. */
+.toolbar-settings {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: end;
+  gap: var(--mantine-spacing-xs);
+  padding-top: 0.75rem;
+}
+
+.toolbar-settings > * {
+  min-width: 0;
+}
+
+.toolbar-settings > .mantine-Checkbox-root {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 48em) {
+  .toolbar-settings {
+    grid-template-columns: 1fr 1fr auto;
+  }
+
+  .toolbar-settings > .mantine-Checkbox-root {
+    grid-column: auto;
+    padding-bottom: 0.5rem;
+  }
+}
+
+/* The actions are used while scrolling through the cards, so they stay pinned. */
+.toolbar-actions {
   position: sticky;
   top: 0;
   z-index: 10;
+  display: flex;
+  gap: var(--mantine-spacing-xs);
   padding: 0.75rem 0;
   margin-bottom: 1rem;
   background: var(--mantine-color-body);
