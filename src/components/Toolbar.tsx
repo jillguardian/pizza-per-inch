@@ -1,4 +1,4 @@
-import { Button, Checkbox, Group, NativeSelect, Stack, Tooltip } from '@mantine/core'
+import { Button, Checkbox, Group, NativeSelect, Stack } from '@mantine/core'
 import type { ReactElement } from 'react'
 import { listCurrencies, type Currency } from '../lib/currencies'
 import type { SizeUnit } from '../lib/pizza'
@@ -61,18 +61,13 @@ export function Toolbar({
       </Group>
       <Group gap="md" justify="space-between" wrap="nowrap">
         <Button onClick={onAddOffer}>+ Add offer</Button>
-        <Tooltip
-          label="An offer has several pizzas, so this stays on."
-          disabled={!bundlesLocked}
-          events={{ hover: true, focus: true, touch: true }}
-        >
-          <Checkbox
-            label="Multi-pizza deals"
-            checked={showBundles}
-            disabled={bundlesLocked}
-            onChange={(event) => onBundlesChange(event.currentTarget.checked)}
-          />
-        </Tooltip>
+        <Checkbox
+          label="Multi-pizza deals"
+          description={bundlesLocked ? 'An offer has several pizzas.' : undefined}
+          checked={showBundles}
+          disabled={bundlesLocked}
+          onChange={(event) => onBundlesChange(event.currentTarget.checked)}
+        />
       </Group>
     </Stack>
   )

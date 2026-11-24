@@ -69,5 +69,11 @@ describe('Toolbar', () => {
     const checkbox = screen.getByRole<HTMLInputElement>('checkbox', { name: 'Multi-pizza deals' })
     expect(checkbox.checked).toBe(true)
     expect(checkbox.disabled).toBe(true)
+    expect(screen.getByText('An offer has several pizzas.')).toBeTruthy()
+  })
+
+  it('gives no lock explanation while the checkbox is free', () => {
+    renderToolbar()
+    expect(screen.queryByText('An offer has several pizzas.')).toBeNull()
   })
 })
