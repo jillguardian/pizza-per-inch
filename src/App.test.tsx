@@ -49,6 +49,7 @@ describe('App', () => {
     if (!offer) throw new Error('Expected the offer card')
     expect(within(offer).getByText('$0.1146 / in²')).toBeTruthy()
 
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Multi-pizza deals' }))
     await userEvent.click(within(offer).getByRole('button', { name: 'Add pizza' }))
 
     expect(within(offer).getByText('Pizza 2 of 2')).toBeTruthy()
@@ -59,11 +60,31 @@ describe('App', () => {
     renderWithMantine(<App />)
     const offer = screen.getAllByLabelText<HTMLInputElement>('Name')[0].closest('section')
     if (!offer) throw new Error('Expected the offer card')
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Multi-pizza deals' }))
     await userEvent.click(within(offer).getByRole('button', { name: 'Add pizza' }))
 
     await userEvent.click(within(offer).getByRole('button', { name: 'Remove pizza' }))
 
     expect(within(offer).queryByRole('button', { name: 'Next pizza' })).toBeNull()
     expect(within(offer).getByText('$0.1146 / in²')).toBeTruthy()
+  })
+
+  it('hides bundle controls until the checkbox is ticked', async () => {
+    renderWithMantine(<App />)
+    expect(screen.queryByRole('button', { name: 'Add pizza' })).toBeNull()
+
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Multi-pizza deals' }))
+
+    expect(screen.getAllByRole('button', { name: 'Add pizza' })).toHaveLength(2)
+  })
+
+  it('keeps bundles on while an offer is a bundle', async () => {
+    renderWithMantine(<App />)
+    const checkbox = screen.getByRole<HTMLInputElement>('checkbox', { name: 'Multi-pizza deals' })
+    await userEvent.click(checkbox)
+    await userEvent.click(screen.getAllByRole('button', { name: 'Add pizza' })[0])
+
+    expect(checkbox.disabled).toBe(true)
+    expect(checkbox.checked).toBe(true)
   })
 })

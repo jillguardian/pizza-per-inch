@@ -10,6 +10,7 @@ interface PizzaFieldsProps {
   pizza: Pizza
   index: number
   count: number
+  showBundles: boolean
   onChange: (changes: Partial<Pizza>) => void
   onAdd: () => void
   onRemove: () => void
@@ -27,6 +28,7 @@ export function PizzaFields({
   pizza,
   index,
   count,
+  showBundles,
   onChange,
   onAdd,
   onRemove,
@@ -38,40 +40,42 @@ export function PizzaFields({
       aria-label={`Pizza ${index + 1}`}
       style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}
     >
-      <div>
-        <Text size="sm" fw={500} mb={4}>
-          {count > 1 ? `Pizza ${index + 1} of ${count}` : `Pizza ${index + 1}`}
-        </Text>
-        <Text size="xs" c="dimmed" mb={6}>
-          Just one pizza → nothing to do
-          <br />
-          Same pizza, several of them → Quantity
-          <br />A different pizza in the deal → Add
-        </Text>
-        <Button.Group className="pizza-actions">
-          <Button
-            variant="default"
-            size="sm"
-            leftSection={<PlusIcon />}
-            aria-label="Add pizza"
-            style={{ flex: 1 }}
-            onClick={onAdd}
-          >
-            Add
-          </Button>
-          <Button
-            variant="default"
-            size="sm"
-            leftSection={<CloseIcon />}
-            aria-label="Remove pizza"
-            style={{ flex: 1 }}
-            disabled={count === 1}
-            onClick={onRemove}
-          >
-            Remove
-          </Button>
-        </Button.Group>
-      </div>
+      {showBundles && (
+        <div>
+          <Text size="sm" fw={500} mb={4}>
+            {count > 1 ? `Pizza ${index + 1} of ${count}` : `Pizza ${index + 1}`}
+          </Text>
+          <Text size="xs" c="dimmed" mb={6}>
+            Just one pizza → nothing to do
+            <br />
+            Same pizza, several of them → Quantity
+            <br />A different pizza in the deal → Add
+          </Text>
+          <Button.Group className="pizza-actions">
+            <Button
+              variant="default"
+              size="sm"
+              leftSection={<PlusIcon />}
+              aria-label="Add pizza"
+              style={{ flex: 1 }}
+              onClick={onAdd}
+            >
+              Add
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              leftSection={<CloseIcon />}
+              aria-label="Remove pizza"
+              style={{ flex: 1 }}
+              disabled={count === 1}
+              onClick={onRemove}
+            >
+              Remove
+            </Button>
+          </Button.Group>
+        </div>
+      )}
       <Group gap="xs" align="flex-end" wrap="nowrap">
         <NativeSelect
           label="Shape"
@@ -80,7 +84,9 @@ export function PizzaFields({
           onChange={(event) => onChange({ shape: event.currentTarget.value as PizzaShape })}
           style={{ flex: 1 }}
         />
-        <QuantityInput value={pizza.quantity} onChange={(quantity) => onChange({ quantity })} />
+        {showBundles && (
+          <QuantityInput value={pizza.quantity} onChange={(quantity) => onChange({ quantity })} />
+        )}
       </Group>
       <Group gap="xs" align="flex-end" wrap="nowrap">
         {pizza.shape === 'round' ? (

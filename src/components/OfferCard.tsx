@@ -28,6 +28,7 @@ interface OfferCardProps {
   priceFormat: Intl.NumberFormat
   rank: OfferRank | null
   maxSizeInches: number
+  showBundles: boolean
   onChange: (changes: Partial<Pick<Offer, 'name' | 'notes' | 'price'>>) => void
   onPizzaChange: (pizzaId: number, changes: Partial<Pizza>) => void
   onAddPizza: () => void
@@ -42,6 +43,7 @@ export function OfferCard({
   priceFormat,
   rank,
   maxSizeInches,
+  showBundles,
   onChange,
   onPizzaChange,
   onAddPizza,
@@ -67,6 +69,7 @@ export function OfferCard({
       pizza={pizza}
       index={index}
       count={offer.pizzas.length}
+      showBundles={showBundles}
       onChange={(changes) => onPizzaChange(pizza.id, changes)}
       onAdd={handleAddPizza}
       onRemove={() => onRemovePizza(pizza.id)}
@@ -103,7 +106,7 @@ export function OfferCard({
           </Group>
           <NumberInput
             label={`Price (${currency})`}
-            description="What you pay for the whole offer."
+            description={showBundles ? 'What you pay for the whole offer.' : undefined}
             min={0}
             allowNegative={false}
             allowLeadingZeros={false}

@@ -1,4 +1,4 @@
-import { Button, Group, NativeSelect } from '@mantine/core'
+import { Button, Checkbox, Group, NativeSelect, Stack } from '@mantine/core'
 import type { ReactElement } from 'react'
 import { listCurrencies, type Currency } from '../lib/currencies'
 import type { SizeUnit } from '../lib/pizza'
@@ -11,7 +11,10 @@ interface ToolbarProps {
   priceUnit: SizeUnit
   onCurrencyChange: (currency: string) => void
   onPriceUnitChange: (unit: SizeUnit) => void
+  showBundles: boolean
+  bundlesLocked: boolean
   onAddOffer: () => void
+  onBundlesChange: (enabled: boolean) => void
 }
 
 function toOptions(currencies: Currency[]): { value: string; label: string }[] {
@@ -33,23 +36,39 @@ export function Toolbar({
   priceUnit,
   onCurrencyChange,
   onPriceUnitChange,
+  showBundles,
+  bundlesLocked,
   onAddOffer,
+  onBundlesChange,
 }: Readonly<ToolbarProps>): ReactElement {
   return (
-    <Group className="toolbar" align="flex-end">
-      <NativeSelect
-        label="Currency"
-        data={CURRENCY_OPTIONS}
-        value={currency}
-        onChange={(event) => onCurrencyChange(event.currentTarget.value)}
-      />
-      <NativeSelect
-        label="Show price per"
-        data={PRICE_UNIT_OPTIONS}
-        value={priceUnit}
-        onChange={(event) => onPriceUnitChange(event.currentTarget.value as SizeUnit)}
-      />
-      <Button onClick={onAddOffer}>+ Add offer</Button>
-    </Group>
+    <Stack className="toolbar" gap="xs">
+      <Group gap="xs" wrap="nowrap">
+        <NativeSelect
+          label="Currency"
+          data={CURRENCY_OPTIONS}
+          value={currency}
+          onChange={(event) => onCurrencyChange(event.currentTarget.value)}
+          style={{ flex: 1, minWidth: 0 }}
+        />
+        <NativeSelect
+          label="Show price per"
+          data={PRICE_UNIT_OPTIONS}
+          value={priceUnit}
+          onChange={(event) => onPriceUnitChange(event.currentTarget.value as SizeUnit)}
+          style={{ flex: 1, minWidth: 0 }}
+        />
+      </Group>
+      <Group gap="md" justify="space-between" wrap="nowrap">
+        <Button onClick={onAddOffer}>+ Add offer</Button>
+        <Checkbox
+          label="Multi-pizza deals"
+          description={bundlesLocked ? 'An offer has several pizzas.' : undefined}
+          checked={showBundles}
+          disabled={bundlesLocked}
+          onChange={(event) => onBundlesChange(event.currentTarget.checked)}
+        />
+      </Group>
+    </Stack>
   )
 }

@@ -8,6 +8,7 @@ interface ToolbarHandlers {
   onCurrencyChange: Mock
   onPriceUnitChange: Mock
   onAddOffer: Mock
+  onBundlesChange: Mock
 }
 
 function renderToolbar(overrides: Partial<Parameters<typeof Toolbar>[0]> = {}): ToolbarHandlers {
@@ -15,8 +16,18 @@ function renderToolbar(overrides: Partial<Parameters<typeof Toolbar>[0]> = {}): 
     onCurrencyChange: vi.fn(),
     onPriceUnitChange: vi.fn(),
     onAddOffer: vi.fn(),
+    onBundlesChange: vi.fn(),
   }
-  renderWithMantine(<Toolbar currency="USD" priceUnit="in" {...handlers} {...overrides} />)
+  renderWithMantine(
+    <Toolbar
+      currency="USD"
+      priceUnit="in"
+      showBundles={false}
+      bundlesLocked={false}
+      {...handlers}
+      {...overrides}
+    />,
+  )
   return handlers
 }
 
@@ -45,5 +56,24 @@ describe('Toolbar', () => {
     expect(screen.getByRole<HTMLSelectElement>('combobox', { name: 'Show price per' }).value).toBe(
       'cm',
     )
+  })
+
+  it('reports turning bundles on', async () => {
+    const { onBundlesChange } = renderToolbar()
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Multi-pizza deals' }))
+    expect(onBundlesChange).toHaveBeenCalledWith(true)
+  })
+
+  it('keeps bundles on and locked while an offer needs them', () => {
+    renderToolbar({ showBundles: true, bundlesLocked: true })
+    const checkbox = screen.getByRole<HTMLInputElement>('checkbox', { name: 'Multi-pizza deals' })
+    expect(checkbox.checked).toBe(true)
+    expect(checkbox.disabled).toBe(true)
+    expect(screen.getByText('An offer has several pizzas.')).toBeTruthy()
+  })
+
+  it('gives no lock explanation while the checkbox is free', () => {
+    renderToolbar()
+    expect(screen.queryByText('An offer has several pizzas.')).toBeNull()
   })
 })
