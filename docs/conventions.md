@@ -32,6 +32,21 @@ Rules for working in this repo, and why they exist. Add new ones here, not in `C
 - **Colocate tests** next to the code they cover (`foo.ts` and `foo.test.ts`). Every module with logic or behavior has one; `main.tsx` and CSS are exempt.
 - **Test behavior the way a user sees it**: Testing Library queries by role and label, `user-event` for interaction. Don't assert on class names or internals.
 
+## Screen sizes
+
+Layouts are checked at these widths. Below 320px nothing is promised.
+
+| Size    | Width         | Checked at | Toolbar                                                                                                                                                       |
+| ------- | ------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Mobile  | 320–767px     | 320, 375   | Currency and price unit share a row at full width, the checkbox has its own row, and the add and sort buttons sit below in a full-width pinned bar.           |
+| Tablet  | 768–1023px    | 768        | The selects are equal and full width. The pinned add and sort buttons sit on the left of the next row, and the checkbox on the right of the same row.         |
+| Desktop | 1024px and up | 1024, 1280 | The selects keep a natural width. The pinned add and sort buttons share the row with them, on the right, and the checkbox sits below them, also on the right. |
+
+- The layout breakpoints are `48em` (768px) and `64em` (1024px). Media queries can't read CSS variables, so the values are repeated in `App.css` and `Toolbar.css`; change them together.
+- Design for 375px first, and make sure nothing scrolls sideways at 320px.
+- Only the add and sort buttons are pinned. Settings are chosen once, so they scroll away.
+  _Why:_ a tall pinned toolbar takes too much of a phone screen.
+
 ## Structure
 
 Files are grouped by type (`lib/`, `components/`) while the app is small. When a second feature arrives (for example sharing or persistence), group by feature instead: `src/features/<feature>/{components,lib}`, with shared code in `src/shared/`.

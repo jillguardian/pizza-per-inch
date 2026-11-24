@@ -52,36 +52,38 @@ export default function App(): ReactElement {
         <span>Each card is one offer: a single pizza or a bundle, with one price.</span>
       </Text>
 
-      <Toolbar
-        currency={currency}
-        priceUnit={priceUnit}
-        onCurrencyChange={setCurrency}
-        onPriceUnitChange={setPriceUnit}
-        showBundles={showBundles}
-        bundlesLocked={bundlesLocked}
-        onAddOffer={addOffer}
-        onSortOffers={sortOffers}
-        onBundlesChange={setBundlesChosen}
-      />
+      <div className="workspace">
+        <Toolbar
+          currency={currency}
+          priceUnit={priceUnit}
+          onCurrencyChange={setCurrency}
+          onPriceUnitChange={setPriceUnit}
+          showBundles={showBundles}
+          bundlesLocked={bundlesLocked}
+          onAddOffer={addOffer}
+          onSortOffers={sortOffers}
+          onBundlesChange={setBundlesChosen}
+        />
 
-      <div className="offers">
-        {offers.map((offer) => (
-          <OfferCard
-            key={offer.id}
-            offer={offer}
-            currency={currency}
-            priceUnit={priceUnit}
-            priceFormat={priceFormat}
-            rank={ranks.get(offer.id) ?? null}
-            maxSizeInches={maxSizeInches}
-            showBundles={showBundles}
-            onChange={(changes) => updateOffer(offer.id, changes)}
-            onPizzaChange={(pizzaId, changes) => updatePizza(offer.id, pizzaId, changes)}
-            onAddPizza={() => addPizza(offer.id)}
-            onRemovePizza={(pizzaId) => removePizza(offer.id, pizzaId)}
-            onRemove={() => removeOffer(offer.id)}
-          />
-        ))}
+        <div className="offers">
+          {offers.map((offer) => (
+            <OfferCard
+              key={offer.id}
+              offer={offer}
+              currency={currency}
+              priceUnit={priceUnit}
+              priceFormat={priceFormat}
+              rank={ranks.get(offer.id) ?? null}
+              maxSizeInches={maxSizeInches}
+              showBundles={showBundles}
+              onChange={(changes) => updateOffer(offer.id, changes)}
+              onPizzaChange={(pizzaId, changes) => updatePizza(offer.id, pizzaId, changes)}
+              onAddPizza={() => addPizza(offer.id)}
+              onRemovePizza={(pizzaId) => removePizza(offer.id, pizzaId)}
+              onRemove={() => removeOffer(offer.id)}
+            />
+          ))}
+        </div>
       </div>
     </Container>
   )

@@ -1,3 +1,8 @@
+/* Screen sizes (see docs/conventions.md). Below 768px the settings sit above a full-width pinned
+   bar. From 768px the toolbar items join the grid in App.css: the buttons are pinned on the
+   left of the second row and the checkbox sits on the right. From 1024px the buttons move up
+   to the right of the selects and the checkbox sits below them, on the right. */
+
 /* The settings are chosen once, so they scroll away with the page. The two selects always share
    a row, and the checkbox sits on its own row below them. */
 .toolbar-settings {
@@ -5,7 +10,6 @@
   grid-template-columns: 1fr 1fr;
   align-items: end;
   gap: var(--mantine-spacing-xs);
-  padding-top: 0.75rem;
 }
 
 .toolbar-settings > * {
@@ -29,10 +33,58 @@
   border-bottom: 1px solid var(--mantine-color-default-border);
 }
 
-/* On a wide screen the selects keep a natural width instead of stretching across the page. */
 @media (min-width: 48em) {
   .toolbar-settings {
-    grid-template-columns: minmax(0, 360px) minmax(0, 180px);
-    justify-content: start;
+    display: contents;
+  }
+
+  .toolbar-settings > * {
+    position: relative;
+    z-index: 11;
+  }
+
+  .toolbar-settings > .mantine-NativeSelect-root {
+    grid-row: 1;
+  }
+
+  .toolbar-settings > .mantine-Checkbox-root {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+    align-self: start;
+    display: flex;
+    align-items: center;
+    min-height: 36px;
+    margin-top: 0.75rem;
+  }
+
+  /* Spans the rows below it, so it can stay pinned while the cards scroll beneath it. */
+  .toolbar-actions {
+    grid-column: 1;
+    grid-row: 2 / span 2;
+    justify-self: start;
+    align-self: start;
+    margin: 0;
+    border-bottom: 0;
+
+    /* A page-coloured background reaching both edges of the screen. It is invisible at the top of
+       the page, and hides the cards that scroll beneath the buttons once they are pinned. The
+       settings sit above it (z-index 11), so it never covers them. */
+    box-shadow: 0 0 0 100vmax var(--mantine-color-body);
+    clip-path: inset(0 -100vmax);
+  }
+}
+
+@media (min-width: 64em) {
+  .toolbar-settings > .mantine-Checkbox-root {
+    grid-column: 3;
+  }
+
+  .toolbar-actions {
+    grid-column: 3;
+    grid-row: 1 / span 3;
+    justify-self: end;
+    margin-top: 1.05rem;
+    padding: 0.5rem 0 0.5rem 0.5rem;
   }
 }

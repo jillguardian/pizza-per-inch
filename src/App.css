@@ -1,3 +1,29 @@
+/* Toolbar and cards share one grid from 768px, so the pinned buttons can sit beside the settings
+   and still stay pinned while the cards scroll. Below that the toolbar is plain stacked rows. */
+.workspace {
+  padding-top: 0.75rem;
+}
+
+@media (min-width: 48em) {
+  .workspace {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: var(--mantine-spacing-xs);
+  }
+
+  .workspace > .offers {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    margin-top: 1rem;
+  }
+}
+
+@media (min-width: 64em) {
+  .workspace {
+    grid-template-columns: minmax(0, 360px) minmax(0, 180px) 1fr;
+  }
+}
+
 .offers {
   display: grid;
   /* As many columns as fit, each at least 340px, or the full width on a narrower screen. */
