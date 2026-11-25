@@ -115,8 +115,10 @@ When splitting:
 
 The `Default branch` ruleset (Settings -> Rules) protects `main`:
 
-- The `check` CI job must pass, and the branch must be up to date. The `dependency-review` job must pass too (it only fails on vulnerabilities the PR itself introduces).
+- The `check` CI job must pass, and the branch must be up to date. The `dependency-review` job must pass too (it only fails on vulnerabilities the PR itself introduces), and so must `accessibility` (axe in real Chrome, see Accessibility).
 - Conversations must be resolved before merging.
-- No required approving reviews: this is a solo repo, and an author can't approve their own PR. The review is `/code-review`, whose resolved threads are the record.
+- One approving review is required, from a code owner (`.github/CODEOWNERS` names the owner). A new push dismisses earlier approvals, and the last push must be approved by someone other than the pusher.
+  - An author can't approve their own PR, so **the owner merges their own PRs through the ruleset's bypass** (admin role, "for pull requests only"): `gh pr merge <number> --squash --delete-branch --admin`, or "Merge without waiting for requirements" on the PR page. The review for those is `/code-review`, whose resolved threads are the record.
+  - A PR opened by someone else, including Dependabot, needs the owner's approval, with no bypass.
 - Linear history; no force-push or deletion.
-- Repository admins can bypass through a pull request.
+- The bypass is for pull requests only. Nobody can push straight to `main`, even an admin.
