@@ -47,18 +47,21 @@ export function Toolbar({
     <>
       <div className="toolbar-settings">
         <NativeSelect
+          className="toolbar-select"
           label="Currency"
           data={CURRENCY_OPTIONS}
           value={currency}
           onChange={(event) => onCurrencyChange(event.currentTarget.value)}
         />
         <NativeSelect
+          className="toolbar-select"
           label="Show price per"
           data={PRICE_UNIT_OPTIONS}
           value={priceUnit}
           onChange={(event) => onPriceUnitChange(event.currentTarget.value as SizeUnit)}
         />
         <Checkbox
+          className="toolbar-checkbox"
           label="Multi-pizza deals"
           description={bundlesLocked ? 'An offer has several pizzas.' : undefined}
           checked={showBundles}
