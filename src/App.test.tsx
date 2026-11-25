@@ -106,7 +106,7 @@ describe('App', () => {
       const smallPrice = screen.getAllByRole('textbox', { name: /Price/ })[0]
 
       await userEvent.clear(smallPrice)
-      await userEvent.type(smallPrice, '1')
+      await userEvent.type(smallPrice, '100')
 
       expect(names()).toEqual(['Small', 'Large'])
     })
