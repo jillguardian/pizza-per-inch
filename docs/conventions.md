@@ -34,11 +34,11 @@ Rules for working in this repo, and why they exist. Add new ones here, not in `C
 
 ## Colors
 
-- **Colors are chosen in `src/theme.ts` only**, as named tokens with a light and a dark value (`mutedText`, `bestValue`, the rank colors, `primary`). Components and styles use the names: Mantine's `c="dimmed"`, the rank palettes (`rank-1`, `rank-2`, `rank-3`, `rank-other`, handed out by `rankColor()`), or the CSS variable `--app-color-best-value`. Never write a hex value, a Mantine palette name (`green`) or a palette shade variable (`--mantine-color-green-6`) in a component or a stylesheet.
+- **Colors are chosen in `src/theme.ts` only**, as named tokens: text colors with a light and a dark value (`mutedText`, `bestValue`), and fills with one value and white text on them (`primary` and the rank colors). Components and styles use the names: Mantine's `c="dimmed"`, the rank palettes (`rank-1`, `rank-2`, `rank-3`, `rank-other`, handed out by `rankColor()`), or the CSS variable `--app-color-best-value`. Never write a hex value, a Mantine palette name (`green`) or a palette shade variable (`--mantine-color-green-6`) in a component or a stylesheet.
   _Why:_ one place decides the colors, so contrast can be checked once and a light and dark theme only needs the values changed there.
-- **Every token needs a declared contrast** in `src/theme.test.ts`: text on each surface it sits on, or white text on the fill. Text needs 4.5:1 (WCAG AA), in light and in dark. A new token fails the "left unchecked" test until it is declared.
+- **Every token needs a declared contrast** in `src/theme.test.ts`: text on each surface it sits on, or white text on the fill. Text needs 4.5:1 (WCAG AA), in light and in dark. A new text token fails the "left unchecked" test until it is declared, and a new fill is checked automatically.
 - **How to add a color:**
-  1. Add the token to `COLOR_TOKENS` in `src/theme.ts`, with its light and dark values.
+  1. Add the token to `TEXT_TOKENS` (light and dark values) or `FILL_TOKENS` (one value) in `src/theme.ts`.
   2. Expose it: a Mantine palette in `theme.colors`, or a CSS variable in `cssVariablesResolver`.
   3. Declare its contrast pair in `src/theme.test.ts`.
 - **Not covered:** the pizza drawing is artwork (`PizzaVisual.tsx`). The red remove button and the grey arrows use Mantine's own colors, are allowed by name in the test, and are checked by axe and by eye.
