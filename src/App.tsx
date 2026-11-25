@@ -2,11 +2,22 @@ import { Container, Text, Title } from '@mantine/core'
 import { useEffect, useRef, useState, type ReactElement } from 'react'
 import './App.css'
 import { ADD_OFFER_ID, offerNameId } from './components/focusIds'
+import { LiveRegion } from './components/LiveRegion'
 import { OfferCard } from './components/OfferCard'
 import { Toolbar } from './components/Toolbar'
+import { useAnnouncer } from './hooks/useAnnouncer'
+import { useBestValueAnnouncement } from './hooks/useBestValueAnnouncement'
 import { useOffers } from './hooks/useOffers'
+import {
+  NOTHING_TO_SORT,
+  offerAdded,
+  offerRemoved,
+  pizzaAdded,
+  pizzaRemoved,
+  sortedByValue,
+} from './lib/announcements'
 import { detectLocaleCurrency } from './lib/currencies'
-import { isBundle, rankOffers } from './lib/offer'
+import { isBundle, rankOffers, sortByRank, type Offer } from './lib/offer'
 import { outline, type SizeUnit } from './lib/pizza'
 
 const DEFAULT_CURRENCY = detectLocaleCurrency() ?? 'USD'
@@ -26,6 +37,9 @@ export default function App(): ReactElement {
   const [priceUnit, setPriceUnit] = useState<SizeUnit>('in')
   const [bundlesChosen, setBundlesChosen] = useState(false)
 
+  const ranks = rankOffers(offers)
+  const { message, announce } = useAnnouncer()
+  useBestValueAnnouncement(offers, ranks, announce)
   const focusAfterRemove = useRef<string | null>(null)
 
   // A removed card takes the focused button with it, so focus moves to the card that takes its
@@ -34,7 +48,32 @@ export default function App(): ReactElement {
     const index = offers.findIndex((offer) => offer.id === id)
     const neighbour = offers[index + 1] ?? offers[index - 1]
     focusAfterRemove.current = neighbour ? offerNameId(neighbour.id) : ADD_OFFER_ID
+    announce(offerRemoved(offers[index].name, offers.length - 1))
     removeOffer(id)
+  }
+
+  function handleAddOffer(): void {
+    addOffer()
+    announce(offerAdded(offers.length + 1))
+  }
+
+  function handleSortOffers(): void {
+    announce(
+      ranks.size === 0
+        ? NOTHING_TO_SORT
+        : sortedByValue(sortByRank(offers).map((offer) => offer.name)),
+    )
+    sortOffers()
+  }
+
+  function handleAddPizza(offer: Offer): void {
+    addPizza(offer.id)
+    announce(pizzaAdded(offer.name, offer.pizzas.length + 1))
+  }
+
+  function handleRemovePizza(offer: Offer, pizzaId: number): void {
+    removePizza(offer.id, pizzaId)
+    announce(pizzaRemoved(offer.name, offer.pizzas.length - 1))
   }
 
   useEffect(() => {
@@ -43,7 +82,6 @@ export default function App(): ReactElement {
     focusAfterRemove.current = null
   }, [offers])
 
-  const ranks = rankOffers(offers)
   const bundlesLocked = offers.some(isBundle)
   const showBundles = bundlesChosen || bundlesLocked
   const maxSizeInches = Math.max(
@@ -62,6 +100,7 @@ export default function App(): ReactElement {
 
   return (
     <Container component="main" size="lg" py="md">
+      <LiveRegion message={message} />
       <Title order={1} mb="xs">
         🍕 Pizza per Inch
       </Title>
@@ -78,8 +117,8 @@ export default function App(): ReactElement {
           onPriceUnitChange={setPriceUnit}
           showBundles={showBundles}
           bundlesLocked={bundlesLocked}
-          onAddOffer={addOffer}
-          onSortOffers={sortOffers}
+          onAddOffer={handleAddOffer}
+          onSortOffers={handleSortOffers}
           onBundlesChange={setBundlesChosen}
         />
 
@@ -96,8 +135,8 @@ export default function App(): ReactElement {
               showBundles={showBundles}
               onChange={(changes) => updateOffer(offer.id, changes)}
               onPizzaChange={(pizzaId, changes) => updatePizza(offer.id, pizzaId, changes)}
-              onAddPizza={() => addPizza(offer.id)}
-              onRemovePizza={(pizzaId) => removePizza(offer.id, pizzaId)}
+              onAddPizza={() => handleAddPizza(offer)}
+              onRemovePizza={(pizzaId) => handleRemovePizza(offer, pizzaId)}
               onRemove={() => handleRemoveOffer(offer.id)}
             />
           ))}

@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import App from './App'
@@ -190,6 +190,66 @@ describe('App', () => {
       await userEvent.click(screen.getByRole('button', { name: 'Remove offer' }))
 
       expect(document.activeElement).toBe(screen.getByRole('button', { name: '+ Add offer' }))
+    })
+  })
+
+  describe('announcements for screen readers', () => {
+    const status = (): string => screen.getByRole('status').textContent.trim()
+
+    it('has a quiet status region to start with', () => {
+      renderWithMantine(<App />)
+      expect(status()).toBe('')
+    })
+
+    it('announces an added offer', async () => {
+      renderWithMantine(<App />)
+      await userEvent.click(screen.getByRole('button', { name: '+ Add offer' }))
+      expect(status()).toBe('Offer added. 3 offers.')
+    })
+
+    it('announces a removed offer', async () => {
+      renderWithMantine(<App />)
+      await userEvent.click(screen.getAllByRole('button', { name: 'Remove offer' })[0])
+      expect(status()).toBe('Small removed. 1 offer left.')
+    })
+
+    it('announces the order after sorting', async () => {
+      renderWithMantine(<App />)
+      await userEvent.click(screen.getByRole('button', { name: 'Sort by value' }))
+      expect(status()).toBe('Sorted by value, best first: Large, Small.')
+    })
+
+    it('says when there is nothing to sort', async () => {
+      renderWithMantine(<App />)
+      await userEvent.click(screen.getAllByRole('button', { name: 'Remove offer' })[0])
+
+      await userEvent.click(screen.getByRole('button', { name: 'Sort by value' }))
+
+      expect(status()).toContain('Nothing to sort yet')
+    })
+
+    it('announces an added and a removed pizza', async () => {
+      renderWithMantine(<App />)
+      await userEvent.click(screen.getByRole('checkbox', { name: 'Multi-pizza deals' }))
+
+      await userEvent.click(screen.getAllByRole('button', { name: 'Add pizza' })[0])
+      expect(status()).toBe('Pizza 2 of 2 added to Small.')
+
+      await userEvent.click(screen.getAllByRole('button', { name: 'Remove pizza' })[0])
+      expect(status()).toBe('Pizza removed from Small. 1 pizza left.')
+    })
+
+    it('announces a new best value only after typing pauses', async () => {
+      renderWithMantine(<App />)
+      const smallPrice = screen.getAllByRole('textbox', { name: /Price/ })[0]
+
+      await userEvent.clear(smallPrice)
+      await userEvent.type(smallPrice, '1')
+      expect(status()).toBe('')
+
+      await waitFor(() => expect(status()).toBe('Small is now the best value.'), {
+        timeout: 3000,
+      })
     })
   })
 })
