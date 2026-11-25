@@ -116,19 +116,5 @@ When splitting:
 
 Two rulesets target `main` (Settings -> Rules). They apply together, and where they differ the stricter rule wins.
 
-**`Default branch`: active, and nobody can bypass it, not even an admin.**
-
-- The `check`, `dependency-review` and `accessibility` jobs must pass, and the branch must be up to date. The `dependency-review` job only fails on vulnerabilities the PR itself introduces.
-- Changes go through a pull request, and conversations must be resolved before merging. Only squash merges are allowed.
-- Linear history; no force-push or deletion.
-- Code quality, at severity "warnings".
-
-**`Approvals`: switched off for now** (enforcement "Disabled"), but kept ready.
-
-- Its rule: one approving review from a code owner (`.github/CODEOWNERS` names the owner), earlier approvals dismissed by a new push, and the last push approved by someone other than the pusher. The owner is on its bypass list, for pull requests only.
-- _Why it is off:_ merging needs write access, and the owner is the only person who has it, so the rule would protect nothing. An author can't approve their own PR either, so with the rule on, the owner has to bypass it on every merge.
-- **Switch it on (set enforcement to "Active") when a second person gets write access.** From then on, PRs from others, Dependabot included, need the owner's approval, and the owner merges their own with `gh pr merge <number> --squash --delete-branch --admin`. The review for the owner's own PRs is `/code-review`, whose resolved threads are the record.
-
-_Why two rulesets:_ a bypass list belongs to one ruleset and exempts only its rules. With one ruleset, `--admin` skipped everything, including a failing check. With the approval rule on its own, it skips the approval only. Checked on a throwaway PR with a failing check: `gh pr merge --admin` was refused with `Required status check "check" is failing`.
-
-_Changing a ruleset through the API_ replaces the whole rule list: save the current JSON first, change only what you mean to, and diff the result. A read can return `null` for a field that the update rejects (leave it out).
+- **`Default branch`** (active): the `check`, `dependency-review` and `accessibility` jobs must pass, and the branch must be up to date. Changes go through a pull request with conversations resolved, and only squash merges are allowed. Linear history; no force-push or deletion. Code quality at severity "warnings". The `dependency-review` job only fails on vulnerabilities the PR itself introduces.
+- **`Approvals`** (switched off for now): one approving review from a code owner (`.github/CODEOWNERS`), with earlier approvals dismissed by a new push. It is a ruleset of its own on purpose: a ruleset's exemptions apply only to its own rules, so keeping this rule apart means nothing can ever exempt a failing check.
