@@ -114,12 +114,21 @@ When splitting:
 
 ### Repository rules
 
-The `Default branch` ruleset (Settings -> Rules) protects `main`:
+Two rulesets protect `main` (Settings -> Rules). They apply together, and where they differ the stricter rule wins.
 
-- The `check` CI job must pass, and the branch must be up to date. The `dependency-review` job must pass too (it only fails on vulnerabilities the PR itself introduces), and so must `accessibility` (axe in real Chrome, see Accessibility).
-- Conversations must be resolved before merging.
-- One approving review is required, from a code owner (`.github/CODEOWNERS` names the owner). A new push dismisses earlier approvals, and the last push must be approved by someone other than the pusher.
-  - An author can't approve their own PR, so **the owner merges their own PRs through the ruleset's bypass** (admin role, "for pull requests only"): `gh pr merge <number> --squash --delete-branch --admin`, or "Merge without waiting for requirements" on the PR page. The review for those is `/code-review`, whose resolved threads are the record.
-  - A PR opened by someone else, including Dependabot, needs the owner's approval, with no bypass.
+**`Default branch`: no one can bypass it, not even an admin.**
+
+- The `check`, `dependency-review` and `accessibility` jobs must pass, and the branch must be up to date. The `dependency-review` job only fails on vulnerabilities the PR itself introduces.
+- Changes go through a pull request, and conversations must be resolved before merging. Only squash merges are allowed.
 - Linear history; no force-push or deletion.
-- The bypass is for pull requests only. Nobody can push straight to `main`, even an admin.
+- Code quality, at severity "warnings".
+
+**`Approvals`: the owner can bypass it, for pull requests only.**
+
+- One approving review is required, from a code owner (`.github/CODEOWNERS` names the owner). A new push dismisses earlier approvals, and the last push must be approved by someone other than the pusher.
+- An author can't approve their own PR, so **the owner merges their own PRs through this bypass**: `gh pr merge <number> --squash --delete-branch --admin`, or "Merge without waiting for requirements" on the PR page. The review for those is `/code-review`, whose resolved threads are the record.
+- A PR opened by someone else, including Dependabot, needs the owner's approval, with no bypass.
+
+_Why two rulesets:_ a bypass list belongs to one ruleset and exempts only its rules. With one ruleset, `--admin` skipped everything, including a failing check. Split like this, it skips the approval only. Checked on a throwaway PR with a failing check: `gh pr merge --admin` was refused with `Required status check "check" is failing`.
+
+_Changing a ruleset through the API_ replaces the whole rule list: save the current JSON first, change only what you mean to, and diff the result. A read can return `null` for a field that the update rejects (leave it out).
