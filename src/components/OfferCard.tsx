@@ -14,11 +14,11 @@ import {
 import { useState, type ReactElement } from 'react'
 import { pricePerSquareUnit, type Offer, type OfferRank } from '../lib/offer'
 import type { Pizza, SizeUnit } from '../lib/pizza'
+import { offerNameId } from './focusIds'
 import { OfferVisual } from './OfferVisual'
 import { PizzaFields } from './PizzaFields'
 import { rankColor } from './rankColor'
 import { toNumber } from './toNumber'
-import { offerNameId } from './focusIds'
 import { TrashIcon } from './TrashIcon'
 import './OfferCard.css'
 
