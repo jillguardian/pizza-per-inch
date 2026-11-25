@@ -44,6 +44,15 @@ Rules for working in this repo, and why they exist. Add new ones here, not in `C
 - **Not covered:** the pizza drawing is artwork (`PizzaVisual.tsx`). The red remove button and the grey arrows use Mantine's own colors, are allowed by name in the test, and are checked by axe and by eye.
 - **Mantine details** (9.8.x): `cssVariablesResolver` returns `{ variables, light, dark }`. Overriding Mantine's own `--mantine-color-dimmed` works, and it also fixes the description under inputs. A `color` prop on a filled component takes a palette name, so the rank colors are palettes of one shade.
 
+## Accessibility
+
+- **`npm run a11y` runs axe in real Chrome** against the production build, at 375, 768 and 1280px, in light and dark, on the example offers and on a busy page (bundle controls on, four ranked offers, sorted). It fails on any WCAG 2.x A/AA or best-practice violation. CI runs it as the `accessibility` job.
+  _Why real Chrome:_ jsdom has no layout, so it cannot measure color contrast. The check also covers names, labels and roles on the whole page.
+- **Chrome must be installed** to run it (it uses `channel: 'chrome'`, so no browser is downloaded). GitHub's Ubuntu runners have it.
+- **Add a state** to `scripts/check-a11y.ts` when a new screen or control appears that the busy page does not show.
+- **Still manual:** axe finds only part of the problems. Keyboard-only use and a screen reader pass (VoiceOver) are checked by hand. The tests check where focus lands and what is announced.
+- **Dev dependencies:** `axe-core` (MPL-2.0) and `playwright-core` (Apache-2.0) are used only by this check and are never shipped with the site.
+
 ## Screen sizes
 
 Layouts are checked by hand in a real browser at these widths (jsdom can't lay out a page, so the tests don't cover them). Below 320px nothing is promised.
