@@ -125,4 +125,71 @@ describe('App', () => {
       expect(names()).toEqual(['Small', 'Large'])
     })
   })
+
+  describe('keyboard focus', () => {
+    const addPizza = (): HTMLElement => screen.getAllByRole('button', { name: 'Add pizza' })[0]
+    const removePizza = (): HTMLElement =>
+      screen.getAllByRole('button', { name: 'Remove pizza' })[0]
+
+    async function showBundleControls(): Promise<void> {
+      await userEvent.click(screen.getByRole('checkbox', { name: 'Multi-pizza deals' }))
+    }
+
+    it('stays on Add pizza after adding a pizza', async () => {
+      renderWithMantine(<App />)
+      await showBundleControls()
+
+      await userEvent.click(addPizza())
+
+      expect(document.activeElement).toBe(addPizza())
+    })
+
+    it('stays on Remove pizza while more than one pizza is left', async () => {
+      renderWithMantine(<App />)
+      await showBundleControls()
+      await userEvent.click(addPizza())
+      await userEvent.click(addPizza())
+
+      await userEvent.click(removePizza())
+
+      expect(document.activeElement).toBe(removePizza())
+    })
+
+    it('moves to Add pizza when the removal leaves one pizza, as Remove pizza is then disabled', async () => {
+      renderWithMantine(<App />)
+      await showBundleControls()
+      await userEvent.click(addPizza())
+
+      await userEvent.click(removePizza())
+
+      expect(document.activeElement).toBe(addPizza())
+    })
+
+    it('moves to the name of the next offer after removing an offer', async () => {
+      renderWithMantine(<App />)
+
+      await userEvent.click(screen.getAllByRole('button', { name: 'Remove offer' })[0])
+
+      expect(document.activeElement).toBe(screen.getByRole('textbox', { name: 'Name' }))
+      expect(screen.getByRole<HTMLInputElement>('textbox', { name: 'Name' }).value).toBe('Large')
+    })
+
+    it('moves to the name of the previous offer after removing the last offer', async () => {
+      renderWithMantine(<App />)
+
+      await userEvent.click(screen.getAllByRole('button', { name: 'Remove offer' })[1])
+
+      expect(document.activeElement).toBe(screen.getByRole('textbox', { name: 'Name' }))
+      expect(screen.getByRole<HTMLInputElement>('textbox', { name: 'Name' }).value).toBe('Small')
+    })
+
+    it('moves to Add offer after removing the only offer', async () => {
+      renderWithMantine(<App />)
+      await userEvent.click(screen.getAllByRole('button', { name: 'Remove offer' })[0])
+
+      await userEvent.click(screen.getByRole('button', { name: 'Remove offer' }))
+
+      expect(document.activeElement).toBe(screen.getByRole('button', { name: '+ Add offer' }))
+    })
+  })
 })

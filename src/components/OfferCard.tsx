@@ -14,6 +14,7 @@ import {
 import { useState, type ReactElement } from 'react'
 import { pricePerSquareUnit, type Offer, type OfferRank } from '../lib/offer'
 import type { Pizza, SizeUnit } from '../lib/pizza'
+import { offerNameId } from './focusIds'
 import { OfferVisual } from './OfferVisual'
 import { PizzaFields } from './PizzaFields'
 import { rankColor } from './rankColor'
@@ -65,7 +66,6 @@ export function OfferCard({
 
   const fields = (
     <PizzaFields
-      key={pizza.id}
       pizza={pizza}
       index={index}
       count={offer.pizzas.length}
@@ -88,6 +88,7 @@ export function OfferCard({
         <Stack gap="xs">
           <Group gap="xs" wrap="nowrap">
             <TextInput
+              id={offerNameId(offer.id)}
               aria-label="Name"
               value={offer.name}
               onChange={(event) => onChange({ name: event.currentTarget.value })}

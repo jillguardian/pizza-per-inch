@@ -1,6 +1,7 @@
 import { Container, Text, Title } from '@mantine/core'
-import { useState, type ReactElement } from 'react'
+import { useEffect, useRef, useState, type ReactElement } from 'react'
 import './App.css'
+import { ADD_OFFER_ID, offerNameId } from './components/focusIds'
 import { OfferCard } from './components/OfferCard'
 import { Toolbar } from './components/Toolbar'
 import { useOffers } from './hooks/useOffers'
@@ -24,6 +25,23 @@ export default function App(): ReactElement {
   const [currency, setCurrency] = useState(DEFAULT_CURRENCY)
   const [priceUnit, setPriceUnit] = useState<SizeUnit>('in')
   const [bundlesChosen, setBundlesChosen] = useState(false)
+
+  const focusAfterRemove = useRef<string | null>(null)
+
+  // A removed card takes the focused button with it, so focus moves to the card that takes its
+  // place, or the one before it, or the add button when none is left.
+  function handleRemoveOffer(id: number): void {
+    const index = offers.findIndex((offer) => offer.id === id)
+    const neighbour = offers[index + 1] ?? offers[index - 1]
+    focusAfterRemove.current = neighbour ? offerNameId(neighbour.id) : ADD_OFFER_ID
+    removeOffer(id)
+  }
+
+  useEffect(() => {
+    if (focusAfterRemove.current === null) return
+    document.getElementById(focusAfterRemove.current)?.focus()
+    focusAfterRemove.current = null
+  }, [offers])
 
   const ranks = rankOffers(offers)
   const bundlesLocked = offers.some(isBundle)
@@ -80,7 +98,7 @@ export default function App(): ReactElement {
               onPizzaChange={(pizzaId, changes) => updatePizza(offer.id, pizzaId, changes)}
               onAddPizza={() => addPizza(offer.id)}
               onRemovePizza={(pizzaId) => removePizza(offer.id, pizzaId)}
-              onRemove={() => removeOffer(offer.id)}
+              onRemove={() => handleRemoveOffer(offer.id)}
             />
           ))}
         </div>

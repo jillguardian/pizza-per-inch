@@ -1,5 +1,6 @@
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { useState, type ReactElement } from 'react'
 import { describe, expect, it, vi, type Mock } from 'vitest'
 import { createPizza, type Pizza } from '../lib/pizza'
 import { OfferVisual } from './OfferVisual'
@@ -81,5 +82,37 @@ describe('OfferVisual', () => {
     expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Next pizza' }).disabled).toBe(
       true,
     )
+  })
+
+  describe('keyboard focus', () => {
+    // Moves through the pizzas as the card does, so the arrows are enabled and disabled for real.
+    function Stepper({ count }: Readonly<{ count: number }>): ReactElement {
+      const [index, setIndex] = useState(1)
+      return (
+        <OfferVisual
+          pizza={createPizza(index + 1, 12)}
+          maxSizeInches={16}
+          index={index}
+          count={count}
+          onSelect={setIndex}
+        />
+      )
+    }
+
+    it('moves to Previous pizza when Next pizza becomes disabled on the last pizza', async () => {
+      renderWithMantine(<Stepper count={3} />)
+
+      await userEvent.click(screen.getByRole('button', { name: 'Next pizza' }))
+
+      expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Previous pizza' }))
+    })
+
+    it('moves to Next pizza when Previous pizza becomes disabled on the first pizza', async () => {
+      renderWithMantine(<Stepper count={3} />)
+
+      await userEvent.click(screen.getByRole('button', { name: 'Previous pizza' }))
+
+      expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Next pizza' }))
+    })
   })
 })

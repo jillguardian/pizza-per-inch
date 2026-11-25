@@ -1,5 +1,5 @@
 import { Button, Group, NativeSelect, NumberInput, Stack, Text } from '@mantine/core'
-import type { ReactElement } from 'react'
+import { useRef, type ReactElement } from 'react'
 import type { Pizza, PizzaShape, SizeUnit } from '../lib/pizza'
 import { CloseIcon } from './CloseIcon'
 import { PlusIcon } from './PlusIcon'
@@ -23,7 +23,8 @@ const SHAPE_OPTIONS = [
 ]
 
 // The number fields are uncontrolled (defaultValue) so Mantine owns the typed text,
-// including partial input like "0." and cleared fields.
+// including partial input like "0." and cleared fields. They are keyed by pizza, so showing
+// another pizza starts them afresh. The buttons are not, so they keep keyboard focus.
 export function PizzaFields({
   pizza,
   index,
@@ -33,6 +34,16 @@ export function PizzaFields({
   onAdd,
   onRemove,
 }: Readonly<PizzaFieldsProps>): ReactElement {
+  const addButton = useRef<HTMLButtonElement>(null)
+
+  // Remove is disabled once one pizza is left, and a disabled button cannot keep focus.
+  const removeLeavesOnePizza = count === 2
+
+  function handleRemove(): void {
+    if (removeLeavesOnePizza) addButton.current?.focus()
+    onRemove()
+  }
+
   return (
     <Stack
       component="fieldset"
@@ -53,6 +64,7 @@ export function PizzaFields({
           </Text>
           <Button.Group className="pizza-actions">
             <Button
+              ref={addButton}
               variant="default"
               size="sm"
               leftSection={<PlusIcon />}
@@ -69,7 +81,7 @@ export function PizzaFields({
               aria-label="Remove pizza"
               style={{ flex: 1 }}
               disabled={count === 1}
-              onClick={onRemove}
+              onClick={handleRemove}
             >
               Remove
             </Button>
@@ -85,12 +97,17 @@ export function PizzaFields({
           style={{ flex: 1 }}
         />
         {showBundles && (
-          <QuantityInput value={pizza.quantity} onChange={(quantity) => onChange({ quantity })} />
+          <QuantityInput
+            key={pizza.id}
+            value={pizza.quantity}
+            onChange={(quantity) => onChange({ quantity })}
+          />
         )}
       </Group>
       <Group gap="xs" align="flex-end" wrap="nowrap">
         {pizza.shape === 'round' ? (
           <NumberInput
+            key={pizza.id}
             label="Diameter"
             min={0}
             allowNegative={false}
@@ -103,6 +120,7 @@ export function PizzaFields({
         ) : (
           <>
             <NumberInput
+              key={`${pizza.id}-width`}
               label="Width"
               min={0}
               allowNegative={false}
@@ -113,6 +131,7 @@ export function PizzaFields({
               style={{ flex: 1, minWidth: 0 }}
             />
             <NumberInput
+              key={`${pizza.id}-length`}
               label="Length"
               min={0}
               allowNegative={false}

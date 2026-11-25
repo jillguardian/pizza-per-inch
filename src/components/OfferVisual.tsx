@@ -1,5 +1,5 @@
 import { ActionIcon } from '@mantine/core'
-import type { ReactElement } from 'react'
+import { useEffect, useRef, type ReactElement } from 'react'
 import { outline, type Pizza } from '../lib/pizza'
 import { ChevronIcon } from './ChevronIcon'
 import { PizzaVisual } from './PizzaVisual'
@@ -29,16 +29,37 @@ export function OfferVisual({
   onSelect,
 }: Readonly<OfferVisualProps>): ReactElement {
   const { width, length } = outline(pizza, 'in')
+  const previous = useRef<HTMLButtonElement>(null)
+  const next = useRef<HTMLButtonElement>(null)
+
+  // An arrow is disabled at the end of the list, and a disabled button cannot keep focus. Once the
+  // new pizza is showing, the other arrow is enabled again and can take it.
+  const focusAfterSelect = useRef<'previous' | 'next' | null>(null)
+
+  function select(target: number): void {
+    if (target === 0) focusAfterSelect.current = 'next'
+    else if (target === count - 1) focusAfterSelect.current = 'previous'
+    onSelect(target)
+  }
+
+  useEffect(() => {
+    if (focusAfterSelect.current === null) return
+    const arrow = focusAfterSelect.current === 'next' ? next : previous
+    arrow.current?.focus()
+    focusAfterSelect.current = null
+  }, [index])
+
   return (
     <div className="offer-visual">
       {count > 1 && (
         <ActionIcon
+          ref={previous}
           variant="subtle"
           color="gray"
           size={32}
           aria-label="Previous pizza"
           disabled={index === 0}
-          onClick={() => onSelect(index - 1)}
+          onClick={() => select(index - 1)}
           className="arrow previous"
         >
           <ChevronIcon direction="left" />
@@ -55,12 +76,13 @@ export function OfferVisual({
       </div>
       {count > 1 && (
         <ActionIcon
+          ref={next}
           variant="subtle"
           color="gray"
           size={32}
           aria-label="Next pizza"
           disabled={index === count - 1}
-          onClick={() => onSelect(index + 1)}
+          onClick={() => select(index + 1)}
           className="arrow next"
         >
           <ChevronIcon direction="right" />
