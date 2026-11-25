@@ -1,3 +1,9 @@
+/* The pinned buttons cover the top of the page, so a field that gets keyboard focus must be
+   scrolled clear of them. */
+html {
+  scroll-padding-top: 4.5rem;
+}
+
 /* Toolbar and cards share one grid from 768px, so the pinned buttons can sit beside the settings
    and still stay pinned while the cards scroll. Below that the toolbar is plain stacked rows. */
 .workspace {
