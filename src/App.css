@@ -4,6 +4,19 @@ html {
   scroll-padding-top: 4.5rem;
 }
 
+/* Nothing moves for a visitor who has asked their system for reduced motion. Mantine's own setting
+   (respectReducedMotion in theme.ts) only reaches its pop-in components, not the 0.1 to 0.15 s
+   fades on inputs, buttons and the checkbox, which are plain CSS transitions. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* The toolbar and the cards share one grid at every size, so the pinned buttons can sit in their
    own row and still stay pinned while the cards scroll beneath them. Rows: the selects, the
    pinned buttons (a fixed height, shared with the strip behind them), the checkbox on a phone,

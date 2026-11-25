@@ -8,7 +8,8 @@ import { preview } from 'vite'
 // with the example offers and with a busy page (bundle controls on, four ranked offers, sorted).
 // Real Chrome is used because color contrast cannot be measured in jsdom. Fails on any violation,
 // on an error thrown by the page, and on a run that could not finish. Prints axe's "incomplete"
-// results as notes, because those need a human look. Run it with `npm run a11y`.
+// results as notes, because those need a human look. One more run asks Chrome for reduced motion
+// and fails if anything still has a transition or animation. Run it with `npm run a11y`.
 
 const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice']
 const WIDTHS = [375, 768, 1280]
@@ -41,6 +42,19 @@ interface Scan {
   failures: string[]
   notes: string[]
 }
+
+// Lists the elements (and their ::before and ::after) that still have a transition or an
+// animation. Written as a string, because this file is not type-checked against the DOM.
+const FIND_MOTION = `(() => {
+  const moves = (cs) => [cs.transitionDuration, cs.animationDuration].some((v) => v.split(',').some((x) => parseFloat(x) > 0))
+  const found = new Set()
+  for (const el of document.querySelectorAll('*')) {
+    for (const pseudo of [null, '::before', '::after']) {
+      if (moves(getComputedStyle(el, pseudo))) found.add(el.tagName.toLowerCase() + '.' + [...el.classList].slice(0, 2).join('.') + (pseudo ?? ''))
+    }
+  }
+  return [...found]
+})()`
 
 function write(text: string): void {
   process.stdout.write(`${text}\n`)
@@ -109,6 +123,35 @@ async function scan(
   }
 }
 
+// With reduced motion asked for, nothing may move. Runs on the busy page, after every control has
+// been used once, and without the NO_MOTION style the axe scans add.
+async function scanReducedMotion(browser: Browser, url: string): Promise<Scan> {
+  const where = 'reduced motion, 1280px, busy page'
+  const context = await browser.newContext({
+    reducedMotion: 'reduce',
+    viewport: { width: 1280, height: 900 },
+  })
+  try {
+    const page = await context.newPage()
+    await page.goto(url)
+    await page.waitForSelector('h1')
+    await makeBusy(page)
+    const moving = (await page.evaluate(FIND_MOTION)) as string[]
+    const list = moving.slice(0, 8).join('\n    ')
+    return {
+      failures: moving.length
+        ? [`[motion] ${where}: ${moving.length} kind(s) of element still move\n    ${list}`]
+        : [],
+      notes: [],
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message.split('\n')[0] : String(error)
+    return { failures: [`[run failed] ${where}\n    ${message}`], notes: [] }
+  } finally {
+    await context.close()
+  }
+}
+
 async function main(): Promise<void> {
   const axeSource = await readFile(
     createRequire(import.meta.url).resolve('axe-core/axe.min.js'),
@@ -133,6 +176,9 @@ async function main(): Promise<void> {
         }
       }
     }
+    const motion = await scanReducedMotion(browser, url)
+    failures.push(...motion.failures)
+    runs += 1
   } finally {
     await browser.close()
     await server.close()
@@ -140,12 +186,14 @@ async function main(): Promise<void> {
 
   if (notes.length > 0) write(`Not failures, but worth a look:\n  ${notes.join('\n  ')}\n`)
   if (failures.length > 0) {
-    write(`axe found ${failures.length} problem(s) in ${runs} runs:\n`)
+    write(`Found ${failures.length} problem(s) in ${runs} runs:\n`)
     for (const failure of failures) write(`${failure}\n`)
     process.exitCode = 1
     return
   }
-  write(`axe found no violations in ${runs} runs (${WIDTHS.join(', ')} px, light and dark).`)
+  write(
+    `No problems in ${runs} runs: axe at ${WIDTHS.join(', ')} px in light and dark, and nothing moves with reduced motion.`,
+  )
 }
 
 await main()

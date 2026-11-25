@@ -48,6 +48,7 @@ Rules for working in this repo, and why they exist. Add new ones here, not in `C
 
 - **`npm run a11y` runs axe in real Chrome** against the production build, at 375, 768 and 1280px, in light and dark, on the example offers and on a busy page (bundle controls on, four ranked offers, sorted). It fails on any WCAG 2.x A/AA or best-practice violation, on an error thrown by the page, and on a run that could not finish. axe's "incomplete" results (checks it could not decide) are printed as notes, not failures. CI runs it as the `accessibility` job.
   _Why real Chrome:_ jsdom has no layout, so it cannot measure color contrast. The check also covers names, labels and roles on the whole page.
+- **One more run asks Chrome for reduced motion** and fails if any element still has a transition or an animation. `src/App.css` switches them all off under `prefers-reduced-motion: reduce`, because Mantine's own `respectReducedMotion` setting (on in `theme.ts`) only reaches its pop-in components, not its plain CSS fades.
 - **Chrome must be installed** to run it (it uses `channel: 'chrome'`, so no browser is downloaded). GitHub's Ubuntu runners have it.
 - **Add a state** to `scripts/check-a11y.ts` when a new screen or control appears that the busy page does not show.
 - **Still manual:** axe finds only part of the problems. Keyboard-only use and a screen reader pass (VoiceOver) are checked by hand. The tests check where focus lands and what is announced.
