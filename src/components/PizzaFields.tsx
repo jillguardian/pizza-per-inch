@@ -37,8 +37,10 @@ export function PizzaFields({
   const addButton = useRef<HTMLButtonElement>(null)
 
   // Remove is disabled once one pizza is left, and a disabled button cannot keep focus.
+  const removeLeavesOnePizza = count === 2
+
   function handleRemove(): void {
-    if (count === 2) addButton.current?.focus()
+    if (removeLeavesOnePizza) addButton.current?.focus()
     onRemove()
   }
 
