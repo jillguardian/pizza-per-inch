@@ -34,7 +34,7 @@ Rules for working in this repo, and why they exist. Add new ones here, not in `C
 
 ## Screen sizes
 
-Layouts are checked at these widths. Below 320px nothing is promised.
+Layouts are checked by hand in a real browser at these widths (jsdom can't lay out a page, so the tests don't cover them). Below 320px nothing is promised.
 
 | Size    | Width         | Checked at | Toolbar                                                                                                                                                       |
 | ------- | ------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
