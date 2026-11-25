@@ -11,11 +11,13 @@ if [ "$PR_AUTHOR" = "dependabot[bot]" ]; then
   exit 0
 fi
 
-# HTML comments are the template's hints, so they do not count as writing a reference.
-body=$(printf '%s' "$PR_BODY" | perl -0pe 's/<!--.*?-->//gs')
+# HTML comments are the template's hints, so they do not count as writing a reference. A comment
+# that is never closed hides the rest of the text, as it does on GitHub.
+body=$(printf '%s' "$PR_BODY" | perl -0pe 's/<!--.*?(-->|\z)//gs')
 
-# A reference is Closes, Fixes, Resolves or Refs, then #<number>.
-if printf '%s' "$body" | grep -Eiq '(^|[^[:alnum:]])(closes|fixes|resolves|refs) #[0-9]+'; then
+# A reference is Closes, Fixes, Resolves or Refs, then #<number> and nothing that makes it part of a
+# longer word.
+if printf '%s' "$body" | grep -Eiq '(^|[^[:alnum:]])(closes|fixes|resolves|refs) #[0-9]+([^[:alnum:]]|$)'; then
   exit 0
 fi
 

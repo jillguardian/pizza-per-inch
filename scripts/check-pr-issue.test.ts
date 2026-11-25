@@ -32,6 +32,9 @@ describe('check-pr-issue.sh', () => {
     ['a lowercase keyword', 'closes #73'],
     ['a reference below other text', '## What\n\nA change.\n\nCloses #73\n\n## Why\n\nBecause.'],
     ['a reference after a template comment', '<!-- hint -->\nRefs #5'],
+    ['a reference followed by a full stop', 'Closes #12.'],
+    ['a reference at the end of a line', 'Closes #12\nMore text'],
+    ['a reference followed by a comma', 'Refs #12, #13'],
   ])('accepts %s', (_name, body) => {
     expect(check({ body }).ok).toBe(true)
   })
@@ -44,6 +47,9 @@ describe('check-pr-issue.sh', () => {
     ['a keyword that is part of another word', 'Discloses #12'],
     ['a reference inside an HTML comment', '<!-- Closes #12 -->'],
     ['a reference inside a multi-line HTML comment', '<!--\nCloses #12\n-->\n## What'],
+    ['a reference after a comment that is never closed', '<!-- hint\nCloses #12'],
+    ['a number followed by letters', 'Closes #12abc'],
+    ['a number followed by one letter', 'Closes #1x'],
   ])('rejects %s', (_name, body) => {
     const result = check({ body })
     expect(result.ok).toBe(false)

@@ -92,8 +92,8 @@ When splitting:
   Prefixes: `Feat`, `Fix`, `Refactor`, `Docs`, `Test`, `Upgrade`, `Chore`. Don't repeat the prefix verb in the summary (`Upgrade: React to 19`, not `Upgrade: Upgrade React`).
 - **Merging:** PRs are squash-merged (the only method the repo allows), so `main` gets one commit per PR. Its subject is the PR title, with `(#<PR number>)` added by GitHub. PR titles therefore follow the same `Prefix: Summary` format.
 - **Issue references:** every PR names its issue in the description: `Closes #12` when it finishes it (so the issue closes on merge), `Refs #12` when it is one part of it. Keep issue numbers out of commit subjects and PR titles.
-  - _Exempt:_ Dependabot PRs, and the rare PR with the `no-issue` label and a line `No issue: <why>` in the description, for example a typo. A change to behavior is never exempt.
-    _Why:_ GitHub appends the PR number to the squashed subject, so an issue number there would look like a second PR link.
+  _Why:_ GitHub appends the PR number to the squashed subject, so an issue number there would look like a second PR link.
+  - _Exempt:_ Dependabot PRs, and the rare PR with the `no-issue` label and a line `No issue: <why>` in the description, for example a typo. Whether a change deserves this is a judgement for the author and the reviewer: CI only checks that the label and the reason are there, and a change to behavior should have an issue.
 - Commits inside a branch may carry `Refs #12` in the body. The squash folds them into one commit, so this mainly helps reviewers.
 - **Branches:** `<type>/<issue-number>-<short-description>`, for example `feat/16-rank-pizzas` or `fix/5-validate-inputs`.
   - `<type>` is the lowercase commit prefix (`feat`, `fix`, `refactor`, `docs`, `test`, `upgrade`, `chore`).
