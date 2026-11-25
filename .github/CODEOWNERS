@@ -1,0 +1,3 @@
+# The owner reviews every change. Pull requests that touch a file need the review of its code
+# owner (the ruleset requires it), and the owner merges their own through the ruleset's bypass.
+* @jillguardian
