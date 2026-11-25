@@ -15,6 +15,8 @@ Rules for working in this repo, and why they exist. Add new ones here, not in `C
   - PRs: a `dependency-review` job (GitHub's Dependency Review action) fails when a PR adds or changes a dependency with a known `high` or `critical` vulnerability.
   - Weekly: `npm audit --audit-level=high` (`audit.yml`) covers advisories published for dependencies that are already in the tree. Dependabot alerts do too.
     _Why:_ the PR check only looks at what the PR changes, so it can't fail because of an unrelated, newly published advisory and can safely be required. The weekly audit catches the rest.
+- **Licenses:** every package the site ships (the production dependencies and what they depend on) must have a license on the list in `scripts/licenses.ts` (MIT, ISC, BSD, Apache-2.0, 0BSD, CC0). `npm run build` checks it and fails on any other, so a new dependency with, say, a GPL license is stopped until someone has read the license and added it to the list on purpose. The same step writes `dist/licenses.txt`, the notices that are published with the site.
+  _Why:_ the MIT license and its relatives ask that their copyright notice travels with copies of the software, and the minifier removes the comments that used to carry it. Development tools are not shipped, so they are not checked.
 - Before adding a dependency, check it earns its weight. Prefer the standard library or built-in browser APIs (e.g. `Intl`).
 
 ## Code

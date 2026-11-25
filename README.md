@@ -32,3 +32,7 @@ npm run build
 Pushes to `main` run `.github/workflows/deploy.yml`, which tests, builds, and publishes to GitHub Pages. It can also be started by hand from the Actions tab ("Run workflow"), for example to redeploy after a failed run. In the repo settings, set Pages → Source to "GitHub Actions".
 
 Pull requests run lint, tests, and build (`.github/workflows/ci.yml`).
+
+## License
+
+[MIT](LICENSE). The licenses of the packages the site includes are in `licenses.txt`, which the build writes and publishes with the site: <https://jillguardian.github.io/pizza-per-inch/licenses.txt>.
