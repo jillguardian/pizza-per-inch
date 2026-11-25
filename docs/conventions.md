@@ -46,7 +46,7 @@ Rules for working in this repo, and why they exist. Add new ones here, not in `C
 
 ## Accessibility
 
-- **`npm run a11y` runs axe in real Chrome** against the production build, at 375, 768 and 1280px, in light and dark, on the example offers and on a busy page (bundle controls on, four ranked offers, sorted). It fails on any WCAG 2.x A/AA or best-practice violation. CI runs it as the `accessibility` job.
+- **`npm run a11y` runs axe in real Chrome** against the production build, at 375, 768 and 1280px, in light and dark, on the example offers and on a busy page (bundle controls on, four ranked offers, sorted). It fails on any WCAG 2.x A/AA or best-practice violation, on an error thrown by the page, and on a run that could not finish. axe's "incomplete" results (checks it could not decide) are printed as notes, not failures. CI runs it as the `accessibility` job.
   _Why real Chrome:_ jsdom has no layout, so it cannot measure color contrast. The check also covers names, labels and roles on the whole page.
 - **Chrome must be installed** to run it (it uses `channel: 'chrome'`, so no browser is downloaded). GitHub's Ubuntu runners have it.
 - **Add a state** to `scripts/check-a11y.ts` when a new screen or control appears that the busy page does not show.
