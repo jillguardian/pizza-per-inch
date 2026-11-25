@@ -13,14 +13,16 @@ export function useBestValueAnnouncement(
 ): void {
   const best = offers.filter((offer) => ranks.get(offer.id)?.rank === 1)
   const key = best.map((offer) => offer.id).join(',')
+  // Plain strings, so an unrelated render does not look like a change and restart the pause.
+  const message = best.length > 0 ? bestValue(best.map((offer) => offer.name)) : ''
   const announced = useRef(key)
 
   useEffect(() => {
     if (key === announced.current) return
     const timer = setTimeout(() => {
       announced.current = key
-      if (best.length > 0) announce(bestValue(best.map((offer) => offer.name)))
+      if (message !== '') announce(message)
     }, PAUSE_MS)
     return (): void => clearTimeout(timer)
-  }, [key, best, announce])
+  }, [key, message, announce])
 }
