@@ -20,6 +20,11 @@
   grid-column: 1 / -1;
 }
 
+/* Only used from 768px, where it sits behind the pinned buttons. */
+.toolbar-strip {
+  display: none;
+}
+
 /* The actions are used while scrolling through the cards, so they stay pinned. */
 .toolbar-actions {
   position: sticky;
@@ -66,10 +71,24 @@
     align-self: start;
     margin: 0;
     border-bottom: 0;
+    z-index: 12;
+  }
 
-    /* A page-coloured background reaching both edges of the screen. It is invisible at the top of
-       the page, and hides the cards that scroll beneath the buttons once they are pinned. The
-       settings sit above it (z-index 11), so it never covers them. */
+  /* A page-coloured background reaching both edges of the screen, pinned with the buttons. It is
+     invisible at the top of the page and hides the cards that scroll beneath the buttons. It sits
+     below the settings (z-index 11), so it never covers them, and the buttons sit above them, so
+     a setting that scrolls away never draws over the buttons. */
+  .toolbar-strip {
+    display: block;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    grid-column: 1;
+    grid-row: 2 / span 2;
+    align-self: start;
+    height: 3.75rem;
+    pointer-events: none;
+    background: var(--mantine-color-body);
     box-shadow: 0 0 0 100vmax var(--mantine-color-body);
     clip-path: inset(0 -100vmax);
   }
@@ -86,5 +105,12 @@
     justify-self: end;
     margin-top: 1.05rem;
     padding: 0.5rem 0 0.5rem 0.5rem;
+  }
+
+  .toolbar-strip {
+    grid-column: 3;
+    grid-row: 1 / span 3;
+    margin-top: 1.05rem;
+    height: 3.25rem;
   }
 }

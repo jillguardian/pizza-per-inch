@@ -66,6 +66,7 @@ export function Toolbar({
           onChange={(event) => onBundlesChange(event.currentTarget.checked)}
         />
       </div>
+      <div className="toolbar-strip" aria-hidden="true" />
       <div className="toolbar-actions">
         <Button onClick={onAddOffer}>+ Add offer</Button>
         <Button variant="default" onClick={onSortOffers}>
