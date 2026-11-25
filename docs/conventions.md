@@ -101,7 +101,7 @@ When splitting:
   - One topic per branch and PR. Branches are deleted on merge.
     _Why the issue number:_ branch names don't reach `main` after a squash, so it can't be mistaken for the PR link, and it makes the branch easy to trace back to its issue.
 - **Rebase, don't merge.** Pull with `--rebase`. Rebasing a pushed branch needs `--force-with-lease`, never plain `--force`.
-- **Pull requests** use `.github/pull_request_template.md`. CI must pass before merging.
+- **Pull requests** use `.github/pull_request_template.md`. CI must pass and conversations must be resolved before merging.
 - **Dependabot** commits use the `Upgrade` prefix to match this format.
 
 ### Enforcement
@@ -111,10 +111,3 @@ When splitting:
 - A `git revert` message (`Revert "..."`) doesn't match the format. Reword it before pushing.
 - Commits already on `main` from before this rule (the first Dependabot PRs) keep their old `Build(deps)` subjects.
 - Not checked automatically: repeating the prefix verb in the summary (`Upgrade: Upgrade React`). That stays a review item.
-
-### Repository rules
-
-Two rulesets target `main` (Settings -> Rules). They apply together, and where they differ the stricter rule wins.
-
-- **`Default branch`** (active): the `check`, `dependency-review` and `accessibility` jobs must pass, and the branch must be up to date. Changes go through a pull request with conversations resolved, and only squash merges are allowed. Linear history; no force-push or deletion. Code quality at severity "warnings". The `dependency-review` job only fails on vulnerabilities the PR itself introduces.
-- **`Approvals`** (switched off for now): one approving review from a code owner (`.github/CODEOWNERS`), with earlier approvals dismissed by a new push. It is a ruleset of its own on purpose: a ruleset's exemptions apply only to its own rules, so keeping this rule apart means nothing can ever exempt a failing check.
