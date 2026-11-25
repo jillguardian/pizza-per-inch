@@ -19,5 +19,5 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["vite.config.ts", "scripts/check-a11y.ts"]
+  "include": ["vite.config.ts", "scripts/check-a11y.ts", "scripts/licenses.ts"]
 }
