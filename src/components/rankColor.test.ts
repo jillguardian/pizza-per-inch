@@ -7,8 +7,11 @@ describe('rankColor', () => {
     expect(new Set(colors).size).toBe(3)
   })
 
-  it('keeps the best rank green, to match the best value highlight', () => {
-    expect(rankColor(1)).toBe('green')
+  it('names the rank palettes of the theme', () => {
+    expect(rankColor(1)).toBe('rank-1')
+    expect(rankColor(2)).toBe('rank-2')
+    expect(rankColor(3)).toBe('rank-3')
+    expect(rankColor(4)).toBe('rank-other')
   })
 
   it('gives every other rank the same color, different from the podium', () => {

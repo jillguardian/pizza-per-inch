@@ -32,6 +32,18 @@ Rules for working in this repo, and why they exist. Add new ones here, not in `C
 - **Colocate tests** next to the code they cover (`foo.ts` and `foo.test.ts`). Every module with logic or behavior has one; `main.tsx` and CSS are exempt.
 - **Test behavior the way a user sees it**: Testing Library queries by role and label, `user-event` for interaction. Don't assert on class names or internals.
 
+## Colors
+
+- **Colors are chosen in `src/theme.ts` only**, as named tokens with a light and a dark value (`mutedText`, `bestValue`, the rank colors, `primary`). Components and styles use the names: Mantine's `c="dimmed"`, the rank palettes (`rank-1`, `rank-2`, `rank-3`, `rank-other`, handed out by `rankColor()`), or the CSS variable `--app-color-best-value`. Never write a hex value, a Mantine palette name (`green`) or a palette shade variable (`--mantine-color-green-6`) in a component or a stylesheet.
+  _Why:_ one place decides the colors, so contrast can be checked once and a light and dark theme only needs the values changed there.
+- **Every token needs a declared contrast** in `src/theme.test.ts`: text on each surface it sits on, or white text on the fill. Text needs 4.5:1 (WCAG AA), in light and in dark. A new token fails the "left unchecked" test until it is declared.
+- **How to add a color:**
+  1. Add the token to `COLOR_TOKENS` in `src/theme.ts`, with its light and dark values.
+  2. Expose it: a Mantine palette in `theme.colors`, or a CSS variable in `cssVariablesResolver`.
+  3. Declare its contrast pair in `src/theme.test.ts`.
+- **Not covered:** the pizza drawing is artwork (`PizzaVisual.tsx`). The red remove button and the grey arrows use Mantine's own colors, are allowed by name in the test, and are checked by axe and by eye.
+- **Mantine details** (9.8.x): `cssVariablesResolver` returns `{ variables, light, dark }`. Overriding Mantine's own `--mantine-color-dimmed` works, and it also fixes the description under inputs. A `color` prop on a filled component takes a palette name, so the rank colors are palettes of one shade.
+
 ## Screen sizes
 
 Layouts are checked by hand in a real browser at these widths (jsdom can't lay out a page, so the tests don't cover them). Below 320px nothing is promised.

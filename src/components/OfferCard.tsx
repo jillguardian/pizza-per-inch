@@ -121,7 +121,11 @@ export function OfferCard({
               {unitPrice === null ? '—' : `${priceFormat.format(unitPrice)} / ${priceUnit}²`}
             </Text>
             {rank && (
-              <Text size="sm" fw={isBest ? 700 : 400} c={isBest ? 'green' : 'dimmed'}>
+              <Text
+                size="sm"
+                fw={isBest ? 700 : 400}
+                c={isBest ? 'var(--app-color-best-value)' : 'dimmed'}
+              >
                 {isBest
                   ? 'Best value'
                   : `+${Math.max(1, Math.round(rank.percentAboveBest))}% vs best`}

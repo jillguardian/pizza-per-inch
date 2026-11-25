@@ -1,5 +1,5 @@
 .offer.best {
-  border-color: var(--mantine-color-green-6);
+  border-color: var(--app-color-best-value);
 }
 
 .offer textarea {
