@@ -1,11 +1,11 @@
-/* Screen sizes (see docs/conventions.md). Below 768px the settings sit above a full-width pinned
-   bar. From 768px the toolbar items join the grid in App.css: the buttons are pinned on the
-   left of the second row and the checkbox sits on the right. From 1024px the buttons move up
-   to the right of the selects and the checkbox sits below them, on the right. */
+/* Screen sizes: see docs/conventions.md. The grid is in App.css. */
 
-/* The settings are chosen once, so they scroll away with the page. The two selects always share
-   a row, and the checkbox sits on its own row below them. */
+/* The settings are chosen once, so they scroll away with the page. */
 .toolbar-settings {
+  position: relative;
+  z-index: 11;
+  grid-column: 1 / -1;
+  grid-row: 1;
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: end;
@@ -16,102 +16,79 @@
   min-width: 0;
 }
 
-.toolbar-settings > .toolbar-checkbox {
-  grid-column: 1 / -1;
-}
-
-/* Only used from 768px, where it sits behind the pinned buttons. */
+/* The buttons are used while scrolling through the cards, so they stay pinned. They span the
+   rows below them so they can stick, and the strip behind them has the same height. */
+.toolbar-actions,
 .toolbar-strip {
-  display: none;
-}
-
-/* The actions are used while scrolling through the cards, so they stay pinned. */
-.toolbar-actions {
   position: sticky;
   top: 0;
-  z-index: 10;
-  display: flex;
-  gap: var(--mantine-spacing-xs);
-  padding: 0.75rem 0;
-  margin-bottom: 1rem;
-  background: var(--mantine-color-body);
-  border-bottom: 1px solid var(--mantine-color-default-border);
+  grid-column: 1;
+  grid-row: 2 / span 3;
+  align-self: start;
+  height: var(--toolbar-bar-height);
 }
 
+.toolbar-actions {
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+  background: var(--mantine-color-body);
+}
+
+/* A page-coloured background reaching both edges of the screen, pinned with the buttons. It is
+   invisible at the top of the page and hides the cards that scroll beneath the buttons. It sits
+   below the settings and checkbox (z-index 11), so it never covers them, and the buttons sit
+   above them, so a setting that scrolls away never draws over the buttons. */
+.toolbar-strip {
+  z-index: 10;
+  grid-column: 1 / -1;
+  pointer-events: none;
+  background: var(--mantine-color-body);
+  box-shadow: 0 0 0 100vmax var(--mantine-color-body);
+  clip-path: inset(0 -100vmax);
+}
+
+/* Phone: the checkbox gets its own row below the buttons. */
+.toolbar-checkbox {
+  position: relative;
+  z-index: 11;
+  grid-column: 1;
+  grid-row: 3;
+  justify-self: start;
+  margin-top: 0.25rem;
+}
+
+/* Tablet: the checkbox shares the buttons' row, on the right. */
 @media (min-width: 48em) {
-  .toolbar-settings {
-    display: contents;
+  .toolbar-actions {
+    justify-self: start;
   }
 
-  .toolbar-settings > * {
-    position: relative;
-    z-index: 11;
-  }
-
-  .toolbar-settings > .toolbar-select {
-    grid-row: 1;
-  }
-
-  .toolbar-settings > .toolbar-checkbox {
+  .toolbar-checkbox {
     grid-column: 2;
     grid-row: 2;
     justify-self: end;
-    align-self: start;
-    display: flex;
-    align-items: center;
-    min-height: 36px;
-    margin-top: 0.75rem;
-  }
-
-  /* Spans the rows below it, so it can stay pinned while the cards scroll beneath it. */
-  .toolbar-actions {
-    grid-column: 1;
-    grid-row: 2 / span 2;
-    justify-self: start;
-    align-self: start;
-    margin: 0;
-    border-bottom: 0;
-    z-index: 12;
-  }
-
-  /* A page-coloured background reaching both edges of the screen, pinned with the buttons. It is
-     invisible at the top of the page and hides the cards that scroll beneath the buttons. It sits
-     below the settings (z-index 11), so it never covers them, and the buttons sit above them, so
-     a setting that scrolls away never draws over the buttons. */
-  .toolbar-strip {
-    display: block;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    grid-column: 1;
-    grid-row: 2 / span 2;
-    align-self: start;
-    /* The height of .toolbar-actions: a small button (36px) plus its padding. */
-    height: 3.75rem;
-    pointer-events: none;
-    background: var(--mantine-color-body);
-    box-shadow: 0 0 0 100vmax var(--mantine-color-body);
-    clip-path: inset(0 -100vmax);
+    align-self: center;
+    margin-top: 0;
   }
 }
 
+/* Desktop: the selects keep a natural width, and the checkbox sits right beside the buttons. */
 @media (min-width: 64em) {
-  .toolbar-settings > .toolbar-checkbox {
-    grid-column: 3;
+  .toolbar-settings {
+    display: flex;
   }
 
-  .toolbar-actions {
-    grid-column: 3;
-    grid-row: 1 / span 3;
-    justify-self: end;
-    margin-top: 1.05rem;
-    padding: 0.5rem 0 0.5rem 0.5rem;
+  .toolbar-settings > .toolbar-select:first-child {
+    flex: 0 0 360px;
   }
 
-  .toolbar-strip {
-    grid-column: 3;
-    grid-row: 1 / span 3;
-    margin-top: 1.05rem;
-    height: 3.25rem; /* A small button (36px) plus the padding of .toolbar-actions. */
+  .toolbar-settings > .toolbar-select:last-child {
+    flex: 0 0 180px;
+  }
+
+  .toolbar-checkbox {
+    justify-self: start;
   }
 }

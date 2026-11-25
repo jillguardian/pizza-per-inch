@@ -84,4 +84,20 @@ describe('Toolbar', () => {
     renderToolbar()
     expect(screen.queryByText('An offer has several pizzas.')).toBeNull()
   })
+
+  it('tabs through the controls in the order they appear on screen', async () => {
+    renderToolbar()
+    const order = [
+      screen.getByRole('combobox', { name: 'Currency' }),
+      screen.getByRole('combobox', { name: 'Show price per' }),
+      screen.getByRole('button', { name: '+ Add offer' }),
+      screen.getByRole('button', { name: 'Sort by value' }),
+      screen.getByRole('checkbox', { name: 'Multi-pizza deals' }),
+    ]
+
+    for (const control of order) {
+      await userEvent.tab()
+      expect(document.activeElement).toBe(control)
+    }
+  })
 })

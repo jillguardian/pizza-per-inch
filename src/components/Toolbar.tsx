@@ -60,14 +60,6 @@ export function Toolbar({
           value={priceUnit}
           onChange={(event) => onPriceUnitChange(event.currentTarget.value as SizeUnit)}
         />
-        <Checkbox
-          className="toolbar-checkbox"
-          label="Multi-pizza deals"
-          description={bundlesLocked ? 'An offer has several pizzas.' : undefined}
-          checked={showBundles}
-          disabled={bundlesLocked}
-          onChange={(event) => onBundlesChange(event.currentTarget.checked)}
-        />
       </div>
       <div className="toolbar-strip" aria-hidden="true" />
       <div className="toolbar-actions">
@@ -76,6 +68,14 @@ export function Toolbar({
           Sort by value
         </Button>
       </div>
+      <Checkbox
+        className="toolbar-checkbox"
+        label="Multi-pizza deals"
+        description={bundlesLocked ? 'An offer has several pizzas.' : undefined}
+        checked={showBundles}
+        disabled={bundlesLocked}
+        onChange={(event) => onBundlesChange(event.currentTarget.checked)}
+      />
     </>
   )
 }
