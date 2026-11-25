@@ -2,6 +2,7 @@ import { Button, Checkbox, NativeSelect } from '@mantine/core'
 import type { ReactElement } from 'react'
 import { listCurrencies, type Currency } from '../lib/currencies'
 import type { SizeUnit } from '../lib/pizza'
+import { ADD_OFFER_ID } from './focusIds'
 import './Toolbar.css'
 
 const CURRENCIES = listCurrencies()
@@ -63,7 +64,9 @@ export function Toolbar({
       </div>
       <div className="toolbar-strip" aria-hidden="true" />
       <div className="toolbar-actions">
-        <Button onClick={onAddOffer}>+ Add offer</Button>
+        <Button id={ADD_OFFER_ID} onClick={onAddOffer}>
+          + Add offer
+        </Button>
         <Button variant="default" onClick={onSortOffers}>
           Sort by value
         </Button>

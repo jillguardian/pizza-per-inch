@@ -18,6 +18,7 @@ import { OfferVisual } from './OfferVisual'
 import { PizzaFields } from './PizzaFields'
 import { rankColor } from './rankColor'
 import { toNumber } from './toNumber'
+import { offerNameId } from './focusIds'
 import { TrashIcon } from './TrashIcon'
 import './OfferCard.css'
 
@@ -65,7 +66,6 @@ export function OfferCard({
 
   const fields = (
     <PizzaFields
-      key={pizza.id}
       pizza={pizza}
       index={index}
       count={offer.pizzas.length}
@@ -88,6 +88,7 @@ export function OfferCard({
         <Stack gap="xs">
           <Group gap="xs" wrap="nowrap">
             <TextInput
+              id={offerNameId(offer.id)}
               aria-label="Name"
               value={offer.name}
               onChange={(event) => onChange({ name: event.currentTarget.value })}
