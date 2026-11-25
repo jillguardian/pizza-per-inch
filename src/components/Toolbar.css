@@ -1,5 +1,3 @@
-/* Screen sizes: see docs/conventions.md. The grid is in App.css. */
-
 /* The settings are chosen once, so they scroll away with the page. */
 .toolbar-settings {
   position: relative;
@@ -16,8 +14,8 @@
   min-width: 0;
 }
 
-/* The buttons are used while scrolling through the cards, so they stay pinned. They span the
-   rows below them so they can stick, and the strip behind them has the same height. */
+/* The buttons are used while scrolling through the cards, so they stay pinned. A sticky item only
+   sticks inside its grid area, so they span the rows below them. */
 .toolbar-actions,
 .toolbar-strip {
   position: sticky;
@@ -49,7 +47,6 @@
   clip-path: inset(0 -100vmax);
 }
 
-/* Phone: the checkbox gets its own row below the buttons. */
 .toolbar-checkbox {
   position: relative;
   z-index: 11;
@@ -59,7 +56,6 @@
   margin-top: 0.25rem;
 }
 
-/* Tablet: the checkbox shares the buttons' row, on the right. */
 @media (min-width: 48em) {
   .toolbar-actions {
     justify-self: start;
@@ -74,7 +70,6 @@
   }
 }
 
-/* Desktop: the selects keep a natural width, and the checkbox sits right beside the buttons. */
 @media (min-width: 64em) {
   .toolbar-settings {
     display: flex;
