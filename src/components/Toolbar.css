@@ -1,9 +1,89 @@
-.toolbar {
+/* The settings are chosen once, so they scroll away with the page. */
+.toolbar-settings {
+  position: relative;
+  z-index: 11;
+  grid-column: 1 / -1;
+  grid-row: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: end;
+  gap: var(--mantine-spacing-xs);
+}
+
+.toolbar-settings > * {
+  min-width: 0;
+}
+
+/* The buttons are used while scrolling through the cards, so they stay pinned. A sticky item only
+   sticks inside its grid area, so they span the rows below them. */
+.toolbar-actions,
+.toolbar-strip {
   position: sticky;
   top: 0;
-  z-index: 10;
-  padding: 0.75rem 0;
-  margin-bottom: 1rem;
+  grid-column: 1;
+  grid-row: 2 / span 3;
+  align-self: start;
+  height: var(--toolbar-bar-height);
+}
+
+.toolbar-actions {
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
   background: var(--mantine-color-body);
-  border-bottom: 1px solid var(--mantine-color-default-border);
+}
+
+/* A page-coloured background reaching both edges of the screen, pinned with the buttons. It is
+   invisible at the top of the page and hides the cards that scroll beneath the buttons. It sits
+   below the settings and checkbox (z-index 11), so it never covers them, and the buttons sit
+   above them, so a setting that scrolls away never draws over the buttons. */
+.toolbar-strip {
+  z-index: 10;
+  grid-column: 1 / -1;
+  pointer-events: none;
+  background: var(--mantine-color-body);
+  box-shadow: 0 0 0 100vmax var(--mantine-color-body);
+  clip-path: inset(0 -100vmax);
+}
+
+.toolbar-checkbox {
+  position: relative;
+  z-index: 11;
+  grid-column: 1;
+  grid-row: 3;
+  justify-self: start;
+  margin-top: 0.25rem;
+}
+
+@media (min-width: 48em) {
+  .toolbar-actions {
+    justify-self: start;
+  }
+
+  .toolbar-checkbox {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+    align-self: center;
+    margin-top: 0;
+  }
+}
+
+@media (min-width: 64em) {
+  .toolbar-settings {
+    display: flex;
+  }
+
+  .toolbar-settings > .toolbar-select:first-child {
+    flex: 0 0 360px;
+  }
+
+  .toolbar-settings > .toolbar-select:last-child {
+    flex: 0 0 180px;
+  }
+
+  .toolbar-checkbox {
+    justify-self: start;
+  }
 }

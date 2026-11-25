@@ -1,4 +1,4 @@
-import { Button, Checkbox, Group, NativeSelect, Stack } from '@mantine/core'
+import { Button, Checkbox, NativeSelect } from '@mantine/core'
 import type { ReactElement } from 'react'
 import { listCurrencies, type Currency } from '../lib/currencies'
 import type { SizeUnit } from '../lib/pizza'
@@ -14,6 +14,7 @@ interface ToolbarProps {
   showBundles: boolean
   bundlesLocked: boolean
   onAddOffer: () => void
+  onSortOffers: () => void
   onBundlesChange: (enabled: boolean) => void
 }
 
@@ -39,36 +40,42 @@ export function Toolbar({
   showBundles,
   bundlesLocked,
   onAddOffer,
+  onSortOffers,
   onBundlesChange,
 }: Readonly<ToolbarProps>): ReactElement {
   return (
-    <Stack className="toolbar" gap="xs">
-      <Group gap="xs" wrap="nowrap">
+    <>
+      <div className="toolbar-settings">
         <NativeSelect
+          className="toolbar-select"
           label="Currency"
           data={CURRENCY_OPTIONS}
           value={currency}
           onChange={(event) => onCurrencyChange(event.currentTarget.value)}
-          style={{ flex: 1, minWidth: 0 }}
         />
         <NativeSelect
+          className="toolbar-select"
           label="Show price per"
           data={PRICE_UNIT_OPTIONS}
           value={priceUnit}
           onChange={(event) => onPriceUnitChange(event.currentTarget.value as SizeUnit)}
-          style={{ flex: 1, minWidth: 0 }}
         />
-      </Group>
-      <Group gap="md" justify="space-between" wrap="nowrap">
+      </div>
+      <div className="toolbar-strip" aria-hidden="true" />
+      <div className="toolbar-actions">
         <Button onClick={onAddOffer}>+ Add offer</Button>
-        <Checkbox
-          label="Multi-pizza deals"
-          description={bundlesLocked ? 'An offer has several pizzas.' : undefined}
-          checked={showBundles}
-          disabled={bundlesLocked}
-          onChange={(event) => onBundlesChange(event.currentTarget.checked)}
-        />
-      </Group>
-    </Stack>
+        <Button variant="default" onClick={onSortOffers}>
+          Sort by value
+        </Button>
+      </div>
+      <Checkbox
+        className="toolbar-checkbox"
+        label="Multi-pizza deals"
+        description={bundlesLocked ? 'An offer has several pizzas.' : undefined}
+        checked={showBundles}
+        disabled={bundlesLocked}
+        onChange={(event) => onBundlesChange(event.currentTarget.checked)}
+      />
+    </>
   )
 }
