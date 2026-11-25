@@ -91,8 +91,9 @@ When splitting:
 - **Commit format:** `Prefix: Short imperative summary`, for example `Fix: Grid column overflow`.
   Prefixes: `Feat`, `Fix`, `Refactor`, `Docs`, `Test`, `Upgrade`, `Chore`. Don't repeat the prefix verb in the summary (`Upgrade: React to 19`, not `Upgrade: Upgrade React`).
 - **Merging:** PRs are squash-merged (the only method the repo allows), so `main` gets one commit per PR. Its subject is the PR title, with `(#<PR number>)` added by GitHub. PR titles therefore follow the same `Prefix: Summary` format.
-- **Issue references:** put `Closes #12` in the PR description so the issue closes on merge. Keep issue numbers out of commit subjects and PR titles.
-  _Why:_ GitHub appends the PR number to the squashed subject, so an issue number there would look like a second PR link.
+- **Issue references:** every PR names its issue in the description: `Closes #12` when it finishes it (so the issue closes on merge), `Refs #12` when it is one part of it. Keep issue numbers out of commit subjects and PR titles.
+  - _Exempt:_ Dependabot PRs, and the rare PR with the `no-issue` label and a line `No issue: <why>` in the description, for example a typo. A change to behavior is never exempt.
+    _Why:_ GitHub appends the PR number to the squashed subject, so an issue number there would look like a second PR link.
 - Commits inside a branch may carry `Refs #12` in the body. The squash folds them into one commit, so this mainly helps reviewers.
 - **Branches:** `<type>/<issue-number>-<short-description>`, for example `feat/16-rank-pizzas` or `fix/5-validate-inputs`.
   - `<type>` is the lowercase commit prefix (`feat`, `fix`, `refactor`, `docs`, `test`, `upgrade`, `chore`).
@@ -106,7 +107,7 @@ When splitting:
 
 ### Enforcement
 
-- **CI** (`ci.yml`, the `check` job) checks the PR title and every commit subject in the PR with `scripts/check-subject.sh`. It re-runs when the title is edited. Maximum length is 100 characters, which leaves room for Dependabot's longer titles and the `(#N)` GitHub appends.
+- **CI** (`ci.yml`, the `check` job) checks the PR title and every commit subject in the PR with `scripts/check-subject.sh`, and that the PR description names an issue (or is exempt) with `scripts/check-pr-issue.sh`. It re-runs when the title or the description is edited. Adding a label does not re-run it, so add the `No issue:` line after the label. Maximum length is 100 characters, which leaves room for Dependabot's longer titles and the `(#N)` GitHub appends.
 - **Local hook (optional):** `git config core.hooksPath .githooks` runs the same check on every commit message. `fixup!` and `squash!` commits are allowed locally for `git rebase --autosquash`, but CI rejects them, so squash them before pushing.
 - A `git revert` message (`Revert "..."`) doesn't match the format. Reword it before pushing.
 - Commits already on `main` from before this rule (the first Dependabot PRs) keep their old `Build(deps)` subjects.

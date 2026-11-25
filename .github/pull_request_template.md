@@ -1,5 +1,7 @@
 Closes #
 
+<!-- Every pull request names its issue: Closes #N when it finishes it, Refs #N when it is one part of it. No issue is right for it? Add the no-issue label and give the reason on a line of its own that starts with "No issue" and a colon. -->
+
 ## What
 
 <!-- A few bullets on what changed. -->
