@@ -1,6 +1,6 @@
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import indexHtml from '../../index.html?raw'
 import { renderWithMantine } from '../test/render'
 import { ColorSchemeToggle } from './ColorSchemeToggle'
@@ -64,7 +64,7 @@ describe('ColorSchemeToggle', () => {
     expect(pageScheme()).toBe('dark')
   })
 
-  it('is read before the page paints by the script in index.html, with the key and attribute Mantine writes', async () => {
+  it('is saved under the key, and applied through the attribute, that the script in index.html uses', async () => {
     renderWithMantine(<ColorSchemeToggle />)
     await userEvent.click(screen.getByText('Dark'))
     const writtenKey = Object.keys(localStorage).find((key) => localStorage.getItem(key) === 'dark')
@@ -72,5 +72,50 @@ describe('ColorSchemeToggle', () => {
     expect(indexHtml).toContain(`'${writtenKey}'`)
     expect(indexHtml).toContain('data-mantine-color-scheme')
     expect(pageScheme()).toBe('dark')
+  })
+})
+
+// The script in index.html runs before the page paints, so a saved choice does not flash the other
+// scheme. It is run here against a stubbed storage and device setting, as the browser would.
+describe('the color scheme script in index.html', () => {
+  const script = indexHtml.match(/<script>([\s\S]*?)<\/script>/)?.[1] ?? ''
+  const realMatchMedia = window.matchMedia
+  const run = (saved: string | null, deviceIsDark: boolean): string | null => {
+    if (saved !== null) localStorage.setItem(STORAGE_KEY, saved)
+    window.matchMedia = ((query: string) => ({
+      matches: query.includes('prefers-color-scheme: dark') && deviceIsDark,
+    })) as typeof window.matchMedia
+    new Function(script)()
+    return pageScheme()
+  }
+
+  afterEach(() => {
+    window.matchMedia = realMatchMedia
+    localStorage.clear()
+    document.documentElement.removeAttribute('data-mantine-color-scheme')
+  })
+
+  it('is found in the page', () => {
+    expect(script).toContain('data-mantine-color-scheme')
+  })
+
+  it.each([
+    ['nothing saved, dark device', null, true, 'dark'],
+    ['nothing saved, light device', null, false, 'light'],
+    ['auto saved, dark device', 'auto', true, 'dark'],
+    ['auto saved, light device', 'auto', false, 'light'],
+    ['dark saved, light device', 'dark', false, 'dark'],
+    ['light saved, dark device', 'light', true, 'light'],
+  ])('sets the scheme with %s', (_name, saved, deviceIsDark, expected) => {
+    expect(run(saved, deviceIsDark)).toBe(expected)
+  })
+
+  it('leaves the page alone, without an error, when storage cannot be read', () => {
+    const getItem = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('storage is blocked')
+    })
+    expect(() => run(null, true)).not.toThrow()
+    expect(pageScheme()).toBeNull()
+    getItem.mockRestore()
   })
 })
