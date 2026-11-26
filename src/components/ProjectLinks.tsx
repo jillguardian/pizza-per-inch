@@ -15,7 +15,7 @@ export function ProjectLinks(): ReactElement {
       target="_blank"
       rel="noopener noreferrer"
       variant="default"
-      size="var(--project-link-size)"
+      size="var(--page-action-size)"
       aria-label={LABEL}
       title={LABEL}
     >

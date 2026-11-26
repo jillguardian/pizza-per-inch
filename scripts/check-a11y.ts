@@ -154,15 +154,22 @@ async function scanReducedMotion(browser: Browser, url: string): Promise<Scan> {
 }
 
 // The controls that are pinned at the top of the screen, by width. The selectors name the pinned
-// containers, so a second link or button elsewhere on the page cannot match. The GitHub link is
-// pinned from 768px.
+// containers, so a second link or button elsewhere on the page cannot match. The theme toggle and
+// the GitHub link are pinned from 768px.
 const PINNED_BUTTONS = [
   '.toolbar-actions button:has-text("+ Add offer")',
   '.toolbar-actions button:has-text("Sort by value")',
 ]
 const PINNED_CONTROLS = [
   { width: 375, controls: PINNED_BUTTONS },
-  { width: 768, controls: [...PINNED_BUTTONS, '.project-links a[href*="github.com"]'] },
+  {
+    width: 768,
+    controls: [
+      ...PINNED_BUTTONS,
+      '.page-actions input[type=radio] >> nth=0',
+      '.page-actions a[href*="github.com"]',
+    ],
+  },
 ]
 
 // The pinned controls stay at the top of the screen, so focusing one (a click, or Tab onto a

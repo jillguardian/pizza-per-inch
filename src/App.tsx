@@ -4,6 +4,7 @@ import './App.css'
 import { ADD_OFFER_ID, offerNameId } from './components/focusIds'
 import { LiveRegion } from './components/LiveRegion'
 import { OfferCard } from './components/OfferCard'
+import { ColorSchemeToggle } from './components/ColorSchemeToggle'
 import { ProjectLinks } from './components/ProjectLinks'
 import { Toolbar } from './components/Toolbar'
 import { useAnnouncer } from './hooks/useAnnouncer'
@@ -102,7 +103,8 @@ export default function App(): ReactElement {
   return (
     <Container component="main" size="lg" py="md">
       <LiveRegion message={message} />
-      <div className="project-links">
+      <div className="page-actions">
+        <ColorSchemeToggle />
         <ProjectLinks />
       </div>
       <Title order={1} mb="xs">
