@@ -42,7 +42,12 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run format:check
-      - run: npm test
+      - name: Test with coverage
+        run: npm run coverage
+      - name: Show coverage in the job summary
+        if: always() && hashFiles('coverage/coverage-summary.json') != ''
+        run: |
+          jq -r '.total as $t | "### Test coverage\n\n| Measure | Covered |\n|---|---|", (["lines","statements","functions","branches"][] | "| \(.) | \($t[.].pct)% (\($t[.].covered) of \($t[.].total)) |")' coverage/coverage-summary.json >> "$GITHUB_STEP_SUMMARY"
       - run: npm run build
 
   # Runs axe in real Chrome against the production build (color contrast cannot be measured in
