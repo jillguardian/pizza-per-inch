@@ -166,7 +166,7 @@ const PINNED_CONTROLS = [
     width: 768,
     controls: [
       ...PINNED_BUTTONS,
-      '.page-actions input[type=radio] >> nth=0',
+      ...[0, 1, 2].map((index) => `.page-actions input[type=radio] >> nth=${index}`),
       '.page-actions a[href*="github.com"]',
     ],
   },
