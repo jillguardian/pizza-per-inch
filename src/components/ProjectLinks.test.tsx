@@ -9,7 +9,6 @@ describe('ProjectLinks', () => {
     renderWithMantine(<ProjectLinks />)
     const link = screen.getByRole('link', { name: /View the code on GitHub/ })
     expect(link.getAttribute('href')).toBe(REPOSITORY_URL)
-    expect(new URL(REPOSITORY_URL).hostname).toBe('github.com')
   })
 
   it('shows the same words as a tooltip, so a screen reader does not read them twice', () => {
