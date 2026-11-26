@@ -1,7 +1,7 @@
 import { DEFAULT_THEME } from '@mantine/core'
 import { describe, expect, it } from 'vitest'
 import { contrastRatio } from './lib/contrast'
-import { FILL_TOKENS, TEXT_TOKENS, type FillTokenName, type TextTokenName } from './theme'
+import { FILL_TOKENS, TEXT_TOKENS, theme, type FillTokenName, type TextTokenName } from './theme'
 
 type Scheme = 'light' | 'dark'
 const SCHEMES: Scheme[] = ['light', 'dark']
@@ -144,5 +144,11 @@ describe('raw colors', () => {
       return rawColorsIn(cleaned).map((match) => `${file}: ${match}`)
     })
     expect(offenders).toEqual([])
+  })
+})
+
+describe('cursor', () => {
+  it('shows the hand over buttons and other controls, which Mantine leaves as an arrow by default', () => {
+    expect(theme.cursorType).toBe('pointer')
   })
 })

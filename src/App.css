@@ -21,8 +21,11 @@ html {
    own row and still stay pinned while the cards scroll beneath them. Rows: the selects, the
    pinned buttons (a fixed height, shared with the strip behind them), the checkbox on a phone,
    and the cards. See docs/conventions.md for what sits where at each screen size. */
-.workspace {
+:root {
   --toolbar-bar-height: 3.75rem;
+}
+
+.workspace {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto var(--toolbar-bar-height) auto auto;
@@ -65,5 +68,25 @@ html {
 @media (max-width: 640px) {
   .subtitle span {
     display: inline;
+  }
+}
+
+/* On a phone the links have a row of their own above the title. From 768px they are pinned: the
+   element takes no height, so the title is not pushed down, and it sticks at the top of the screen
+   on the same line as the pinned add and sort buttons. */
+.project-links {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--mantine-spacing-xs);
+  margin-bottom: var(--mantine-spacing-xs);
+}
+
+@media (min-width: 48em) {
+  .project-links {
+    position: sticky;
+    top: calc((var(--toolbar-bar-height) - 36px) / 2);
+    z-index: 13;
+    height: 0;
+    margin-bottom: 0;
   }
 }

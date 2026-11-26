@@ -4,6 +4,7 @@ import './App.css'
 import { ADD_OFFER_ID, offerNameId } from './components/focusIds'
 import { LiveRegion } from './components/LiveRegion'
 import { OfferCard } from './components/OfferCard'
+import { ProjectLinks } from './components/ProjectLinks'
 import { Toolbar } from './components/Toolbar'
 import { useAnnouncer } from './hooks/useAnnouncer'
 import { useBestValueAnnouncement } from './hooks/useBestValueAnnouncement'
@@ -101,6 +102,9 @@ export default function App(): ReactElement {
   return (
     <Container component="main" size="lg" py="md">
       <LiveRegion message={message} />
+      <div className="project-links">
+        <ProjectLinks />
+      </div>
       <Title order={1} mb="xs">
         🍕 Pizza per Inch
       </Title>
