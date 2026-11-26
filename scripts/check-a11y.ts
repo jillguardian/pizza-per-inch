@@ -153,23 +153,32 @@ async function scanReducedMotion(browser: Browser, url: string): Promise<Scan> {
   }
 }
 
+// The controls that are pinned at the top of the screen, by width. The selectors name the pinned
+// containers, so a second link or button elsewhere on the page cannot match. The GitHub link is
+// pinned from 768px.
+const PINNED_BUTTONS = [
+  '.toolbar-actions button:has-text("+ Add offer")',
+  '.toolbar-actions button:has-text("Sort by value")',
+]
+const PINNED_CONTROLS = [
+  { width: 375, controls: PINNED_BUTTONS },
+  { width: 768, controls: [...PINNED_BUTTONS, '.project-links a[href*="github.com"]'] },
+]
+
 // The pinned controls stay at the top of the screen, so focusing one (a click, or Tab onto a
 // button) must not move the page. Runs with the page scrolled down, at each width where the
-// control is pinned. The GitHub link is pinned from 768px.
+// control is pinned. Smooth scrolling is switched off, so the page has stopped moving by the time
+// it is measured.
 async function scanFocusScroll(browser: Browser, url: string): Promise<Scan> {
-  const buttons = ['button:has-text("+ Add offer")', 'button:has-text("Sort by value")']
-  const pinned = [
-    { width: 375, controls: buttons },
-    { width: 768, controls: [...buttons, 'a[href*="github.com"]'] },
-  ]
   const failures: string[] = []
-  for (const { width, controls } of pinned) {
+  for (const { width, controls } of PINNED_CONTROLS) {
     const where = `focus scroll, ${width}px, busy page`
     const context = await browser.newContext({ viewport: { width, height: 700 } })
     try {
       const page = await context.newPage()
       await page.goto(url)
       await page.waitForSelector('h1')
+      await page.addStyleTag({ content: 'html { scroll-behavior: auto !important; }' })
       await makeBusy(page)
       for (const control of controls) {
         await page.evaluate('document.activeElement?.blur(); window.scrollTo(0, 800)')
@@ -222,7 +231,7 @@ async function main(): Promise<void> {
     runs += 1
     const focus = await scanFocusScroll(browser, url)
     failures.push(...focus.failures)
-    runs += 2
+    runs += PINNED_CONTROLS.length
   } finally {
     await browser.close()
     await server.close()
