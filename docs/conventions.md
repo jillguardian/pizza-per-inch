@@ -31,6 +31,9 @@ Rules for working in this repo, and why they exist. Add new ones here, not in `C
   _Why:_ components must never mutate their props.
   _Not enforced by a linter:_ oxlint has no rule for React props. The closest, `typescript/prefer-readonly-parameter-types`, needs type-aware linting and flags every function parameter, not only props. This stays a review item.
 - **Keep `src/lib/` free of UI.** Pure logic only, so it is easy to test.
+- **Coverage is measured on every PR, and a drop fails the `check` job.** `npm run coverage` runs the tests with V8 coverage (`@vitest/coverage-v8`) and fails when lines, statements or functions fall below 95%, or branches below 90% (set in `vite.config.ts`). CI prints the numbers in the job summary. Run it locally and open `coverage/index.html` to see which lines the tests miss.
+  _Why Vitest's thresholds and not GitHub's coverage rule:_ the rule is in public preview, needs an owner-only setting and an upload step, while the thresholds work inside the job that is already required.
+  _Keep the thresholds a little below what the tests reach:_ they should catch a drop, not fail on small changes. Raise them when coverage rises, and never lower them to get a PR through without saying why in the PR. `main.tsx`, tests and the test setup are not counted.
 - **Colocate tests** next to the code they cover (`foo.ts` and `foo.test.ts`). Every module with logic or behavior has one; `main.tsx` and CSS are exempt.
 - **Test behavior the way a user sees it**: Testing Library queries by role and label, `user-event` for interaction. Don't assert on class names or internals.
 
