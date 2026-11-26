@@ -1,7 +1,9 @@
 import { DEFAULT_THEME } from '@mantine/core'
+import { createElement } from 'react'
 import { describe, expect, it } from 'vitest'
 import { contrastRatio } from './lib/contrast'
-import { FILL_TOKENS, TEXT_TOKENS, theme, type FillTokenName, type TextTokenName } from './theme'
+import { renderWithMantine } from './test/render'
+import { FILL_TOKENS, TEXT_TOKENS, type FillTokenName, type TextTokenName } from './theme'
 
 type Scheme = 'light' | 'dark'
 const SCHEMES: Scheme[] = ['light', 'dark']
@@ -149,6 +151,8 @@ describe('raw colors', () => {
 
 describe('cursor', () => {
   it('shows the hand over buttons and other controls, which Mantine leaves as an arrow by default', () => {
-    expect(theme.cursorType).toBe('pointer')
+    renderWithMantine(createElement('span'))
+    const css = [...document.querySelectorAll('style')].map((style) => style.textContent).join('\n')
+    expect(css).toContain('--mantine-cursor-type: pointer')
   })
 })
