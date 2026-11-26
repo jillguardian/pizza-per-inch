@@ -1,7 +1,16 @@
 /* The pinned buttons cover the top of the page, so a field that gets keyboard focus must be
    scrolled clear of them. */
 html {
-  scroll-padding-top: 4.5rem;
+  scroll-padding-top: var(--pinned-clearance);
+}
+
+/* The pinned controls themselves already sit at the top of the screen. Without this, the padding
+   above makes the browser scroll the page whenever one of them gets focus (a click, or Tab onto a
+   button), because they stand inside the padded zone. A negative margin of the same size cancels
+   it for them. */
+.toolbar-actions *,
+.project-links * {
+  scroll-margin-top: calc(-1 * var(--pinned-clearance));
 }
 
 /* Nothing moves for a visitor who has asked their system for reduced motion. Mantine's own setting
@@ -24,6 +33,7 @@ html {
 :root {
   --toolbar-bar-height: 3.75rem;
   --project-link-size: 2.25rem;
+  --pinned-clearance: 4.5rem;
 }
 
 .workspace {

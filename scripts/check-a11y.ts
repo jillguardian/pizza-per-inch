@@ -9,7 +9,8 @@ import { preview } from 'vite'
 // Real Chrome is used because color contrast cannot be measured in jsdom. Fails on any violation,
 // on an error thrown by the page, and on a run that could not finish. Prints axe's "incomplete"
 // results as notes, because those need a human look. One more run asks Chrome for reduced motion
-// and fails if anything still has a transition or animation. Run it with `npm run a11y`.
+// and fails if anything still has a transition or animation. A last run checks that focusing a
+// pinned control does not scroll the page. Run it with `npm run a11y`.
 
 const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice']
 const WIDTHS = [375, 768, 1280]
@@ -152,6 +153,55 @@ async function scanReducedMotion(browser: Browser, url: string): Promise<Scan> {
   }
 }
 
+// The controls that are pinned at the top of the screen, by width. The selectors name the pinned
+// containers, so a second link or button elsewhere on the page cannot match. The GitHub link is
+// pinned from 768px.
+const PINNED_BUTTONS = [
+  '.toolbar-actions button:has-text("+ Add offer")',
+  '.toolbar-actions button:has-text("Sort by value")',
+]
+const PINNED_CONTROLS = [
+  { width: 375, controls: PINNED_BUTTONS },
+  { width: 768, controls: [...PINNED_BUTTONS, '.project-links a[href*="github.com"]'] },
+]
+
+// The pinned controls stay at the top of the screen, so focusing one (a click, or Tab onto a
+// button) must not move the page. Runs with the page scrolled down, at each width where the
+// control is pinned. Smooth scrolling is switched off, so the page has stopped moving by the time
+// it is measured.
+async function scanFocusScroll(browser: Browser, url: string): Promise<Scan> {
+  const failures: string[] = []
+  for (const { width, controls } of PINNED_CONTROLS) {
+    const where = `focus scroll, ${width}px, busy page`
+    const context = await browser.newContext({ viewport: { width, height: 700 } })
+    try {
+      const page = await context.newPage()
+      await page.goto(url)
+      await page.waitForSelector('h1')
+      await page.addStyleTag({ content: 'html { scroll-behavior: auto !important; }' })
+      await makeBusy(page)
+      for (const control of controls) {
+        await page.evaluate('document.activeElement?.blur(); window.scrollTo(0, 800)')
+        const before = (await page.evaluate('window.scrollY')) as number
+        if (before < 300) throw new Error(`The page is too short to scroll (${before}px).`)
+        await page.locator(control).focus()
+        const after = (await page.evaluate('window.scrollY')) as number
+        if (Math.abs(after - before) > 1) {
+          failures.push(
+            `[focus scroll] ${where}: focusing ${control} moved the page from ${before}px to ${after}px`,
+          )
+        }
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message.split('\n')[0] : String(error)
+      failures.push(`[run failed] ${where}\n    ${message}`)
+    } finally {
+      await context.close()
+    }
+  }
+  return { failures, notes: [] }
+}
+
 async function main(): Promise<void> {
   const axeSource = await readFile(
     createRequire(import.meta.url).resolve('axe-core/axe.min.js'),
@@ -179,6 +229,9 @@ async function main(): Promise<void> {
     const motion = await scanReducedMotion(browser, url)
     failures.push(...motion.failures)
     runs += 1
+    const focus = await scanFocusScroll(browser, url)
+    failures.push(...focus.failures)
+    runs += PINNED_CONTROLS.length
   } finally {
     await browser.close()
     await server.close()
@@ -192,7 +245,7 @@ async function main(): Promise<void> {
     return
   }
   write(
-    `No problems in ${runs} runs: axe at ${WIDTHS.join(', ')} px in light and dark, and nothing moves with reduced motion.`,
+    `No problems in ${runs} runs: axe at ${WIDTHS.join(', ')} px in light and dark, nothing moves with reduced motion, and focusing a pinned control does not scroll the page.`,
   )
 }
 
