@@ -233,14 +233,18 @@ async function scanLockShift(browser: Browser, url: string): Promise<Scan> {
         }
       }
       const before = await measure()
-      await page.getByRole('switch', { name: 'Multi-pizza deals' }).check({ force: true })
+      await page.getByRole('switch', { name: 'Multi-pizza deals' }).check()
       await page.getByRole('button', { name: 'Add pizza' }).first().click()
       await page.evaluate('document.activeElement?.blur(); window.scrollTo(0, 0)')
       const after = await measure()
       for (const [name, y] of Object.entries(before)) {
-        if (Number.isNaN(y) || Math.abs(after[name] - y) > 1) {
+        const later = after[name]
+        if (Number.isNaN(y) || Number.isNaN(later)) {
+          const when = Number.isNaN(y) ? 'before' : 'after'
+          failures.push(`[lock shift] ${where}: the ${name} could not be measured ${when} locking`)
+        } else if (Math.abs(later - y) > 1) {
           failures.push(
-            `[lock shift] ${where}: the ${name} moved from y${Math.round(y)} to y${Math.round(after[name])} when the deals switch locked`,
+            `[lock shift] ${where}: the ${name} moved from y${Math.round(y)} to y${Math.round(later)} when the deals switch locked`,
           )
         }
       }

@@ -57,8 +57,6 @@ export function Toolbar({
   onClear,
   onBundlesChange,
 }: Readonly<ToolbarProps>): ReactElement {
-  // On a phone the deals switch is at the left of its own row, with its label after it. From 768px
-  // it is at the right, with its label before it, so the switch itself stays at the right edge.
   // Clear joins the pinned buttons on a phone, and sits at the right end of the settings row
   // elsewhere. It is rendered in one place only, so there is never a second Clear button hidden
   // in the page.
@@ -108,6 +106,9 @@ export function Toolbar({
         )}
       </div>
       <div className="toolbar-deals">
+        {/* On a phone the switch is at the left of its own row, with its label after it. From 768px
+            it is at the right, with its label before it, so the switch itself stays at the right
+            edge, whether or not "(in use)" is added to the label. */}
         <Switch
           labelPosition={phone ? 'right' : 'left'}
           label={
