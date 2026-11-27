@@ -87,3 +87,7 @@ function pinOrder(code: string, localeCurrency: string | null): number {
   if (code === localeCurrency) return -1
   return COMMON_CODES.indexOf(code)
 }
+
+export function isSupportedCurrency(code: string): boolean {
+  return Intl.supportedValuesOf('currency').includes(code)
+}

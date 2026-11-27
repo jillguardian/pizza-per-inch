@@ -33,3 +33,5 @@ export function bestValue(names: string[]): string {
     ? `${list} is now the best value.`
     : `${list} are now tied for the best value.`
 }
+
+export const OFFERS_CLEARED = 'All offers cleared. Add an offer to start comparing.'

@@ -12,19 +12,22 @@ import { useBestValueAnnouncement } from './hooks/useBestValueAnnouncement'
 import { useOffers } from './hooks/useOffers'
 import {
   NOTHING_TO_SORT,
+  OFFERS_CLEARED,
   offerAdded,
   offerRemoved,
   pizzaAdded,
   pizzaRemoved,
   sortedByValue,
 } from './lib/announcements'
-import { detectLocaleCurrency } from './lib/currencies'
+import { detectLocaleCurrency, isSupportedCurrency } from './lib/currencies'
 import { isBundle, rankOffers, sortByRank, type Offer } from './lib/offer'
 import { outline, type SizeUnit } from './lib/pizza'
+import { loadSaved, saveComparison } from './lib/savedStorage'
 
 const DEFAULT_CURRENCY = detectLocaleCurrency() ?? 'USD'
 
 export default function App(): ReactElement {
+  const [saved] = useState(() => loadSaved(isSupportedCurrency))
   const {
     offers,
     addOffer,
@@ -34,10 +37,15 @@ export default function App(): ReactElement {
     removePizza,
     removeOffer,
     sortOffers,
-  } = useOffers()
-  const [currency, setCurrency] = useState(DEFAULT_CURRENCY)
-  const [priceUnit, setPriceUnit] = useState<SizeUnit>('in')
-  const [bundlesChosen, setBundlesChosen] = useState(false)
+    clearOffers,
+  } = useOffers(saved?.offers)
+  const [currency, setCurrency] = useState(saved?.currency ?? DEFAULT_CURRENCY)
+  const [priceUnit, setPriceUnit] = useState<SizeUnit>(saved?.priceUnit ?? 'in')
+  const [bundlesChosen, setBundlesChosen] = useState(saved?.bundlesChosen ?? false)
+
+  useEffect(() => {
+    saveComparison({ offers, currency, priceUnit, bundlesChosen })
+  }, [offers, currency, priceUnit, bundlesChosen])
 
   const ranks = rankOffers(offers)
   const { message, announce } = useAnnouncer()
@@ -66,6 +74,11 @@ export default function App(): ReactElement {
         : sortedByValue(sortByRank(offers).map((offer) => offer.name)),
     )
     sortOffers()
+  }
+
+  function handleClear(): void {
+    clearOffers()
+    announce(OFFERS_CLEARED)
   }
 
   function handleAddPizza(offer: Offer): void {
@@ -104,8 +117,10 @@ export default function App(): ReactElement {
     <Container component="main" size="lg" py="md">
       <LiveRegion message={message} />
       <div className="page-actions">
-        <ColorSchemeToggle />
-        <ProjectLinks />
+        <div className="page-actions-group">
+          <ColorSchemeToggle />
+          <ProjectLinks />
+        </div>
       </div>
       <Title order={1} mb="xs">
         🍕 Pizza per Inch
@@ -125,10 +140,17 @@ export default function App(): ReactElement {
           bundlesLocked={bundlesLocked}
           onAddOffer={handleAddOffer}
           onSortOffers={handleSortOffers}
+          offerCount={offers.length}
+          onClear={handleClear}
           onBundlesChange={setBundlesChosen}
         />
 
         <div className="offers">
+          {offers.length === 0 && (
+            <Text c="dimmed" ta="center" py="xl" className="offers-empty">
+              No offers yet. Add an offer to compare prices.
+            </Text>
+          )}
           {offers.map((offer) => (
             <OfferCard
               key={offer.id}

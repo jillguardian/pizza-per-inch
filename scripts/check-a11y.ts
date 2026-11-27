@@ -66,7 +66,7 @@ function write(text: string): void {
 async function makeBusy(page: Page): Promise<void> {
   await page.getByRole('checkbox', { name: 'Multi-pizza deals' }).check()
   await page.getByRole('button', { name: 'Add pizza' }).first().click()
-  for (let i = 0; i < 2; i++) await page.getByRole('button', { name: '+ Add offer' }).click()
+  for (let i = 0; i < 2; i++) await page.getByRole('button', { name: 'Add offer' }).click()
   const prices = page.getByRole('textbox', { name: /Price/ })
   const found = await prices.count()
   if (found !== PRICES.length) {
@@ -157,11 +157,12 @@ async function scanReducedMotion(browser: Browser, url: string): Promise<Scan> {
 // containers, so a second link or button elsewhere on the page cannot match. The theme toggle and
 // the GitHub link are pinned from 768px.
 const PINNED_BUTTONS = [
-  '.toolbar-actions button:has-text("+ Add offer")',
-  '.toolbar-actions button:has-text("Sort by value")',
+  '.toolbar-actions button:has-text("Add offer")',
+  '.toolbar-actions button[aria-label="Sort by value"]',
 ]
 const PINNED_CONTROLS = [
-  { width: 375, controls: PINNED_BUTTONS },
+  // On a phone Clear is among the pinned buttons. From 768px it is in the settings row.
+  { width: 375, controls: [...PINNED_BUTTONS, '.toolbar-actions button[aria-label="Clear"]'] },
   {
     width: 768,
     controls: [

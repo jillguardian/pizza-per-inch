@@ -1,14 +1,16 @@
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi, type Mock } from 'vitest'
+import { afterEach, describe, expect, it, vi, type Mock } from 'vitest'
 import { Toolbar } from './Toolbar'
 import { renderWithMantine } from '../test/render'
+import { PHONE_QUERY } from './breakpoints'
 
 interface ToolbarHandlers {
   onCurrencyChange: Mock
   onPriceUnitChange: Mock
   onAddOffer: Mock
   onSortOffers: Mock
+  onClear: Mock
   onBundlesChange: Mock
 }
 
@@ -18,6 +20,7 @@ function renderToolbar(overrides: Partial<Parameters<typeof Toolbar>[0]> = {}): 
     onPriceUnitChange: vi.fn(),
     onAddOffer: vi.fn(),
     onSortOffers: vi.fn(),
+    onClear: vi.fn(),
     onBundlesChange: vi.fn(),
   }
   renderWithMantine(
@@ -26,6 +29,7 @@ function renderToolbar(overrides: Partial<Parameters<typeof Toolbar>[0]> = {}): 
       priceUnit="in"
       showBundles={false}
       bundlesLocked={false}
+      offerCount={2}
       {...handlers}
       {...overrides}
     />,
@@ -33,10 +37,18 @@ function renderToolbar(overrides: Partial<Parameters<typeof Toolbar>[0]> = {}): 
   return handlers
 }
 
+// The stylesheet as text (a plain `?raw` import of a .css file comes back empty in Vitest).
+const toolbarCss = Object.values(
+  import.meta.glob('./Toolbar.css', { query: '?raw', import: 'default', eager: true }) as Record<
+    string,
+    string
+  >,
+)[0]
+
 describe('Toolbar', () => {
   it('asks to add an offer', async () => {
     const { onAddOffer } = renderToolbar()
-    await userEvent.click(screen.getByRole('button', { name: '+ Add offer' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Add offer' }))
     expect(onAddOffer).toHaveBeenCalledOnce()
   })
 
@@ -44,6 +56,33 @@ describe('Toolbar', () => {
     const { onSortOffers } = renderToolbar()
     await userEvent.click(screen.getByRole('button', { name: 'Sort by value' }))
     expect(onSortOffers).toHaveBeenCalledOnce()
+  })
+
+  it('clears only after the dialog is confirmed', async () => {
+    const { onClear } = renderToolbar()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Clear' }))
+    expect(onClear).not.toHaveBeenCalled()
+    const dialog = await screen.findByRole('dialog', { name: 'Clear all 2 offers?' })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Clear' }))
+
+    expect(onClear).toHaveBeenCalledOnce()
+  })
+
+  it('does not repeat the visible button names as tooltips', () => {
+    renderToolbar()
+    expect(screen.getByRole('button', { name: 'Sort by value' }).getAttribute('title')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Clear' }).getAttribute('title')).toBeNull()
+  })
+
+  it('stays in step with the breakpoint in Toolbar.css, where the labels are hidden on a phone', () => {
+    expect(toolbarCss.length).toBeGreaterThan(0)
+    expect(toolbarCss).toContain(`@media ${PHONE_QUERY}`)
+  })
+
+  it('has one Clear button, so there is never a second one hidden in the page', () => {
+    renderToolbar()
+    expect(screen.getAllByRole('button', { name: 'Clear' })).toHaveLength(1)
   })
 
   it('reports a newly selected currency', async () => {
@@ -90,7 +129,8 @@ describe('Toolbar', () => {
     const order = [
       screen.getByRole('combobox', { name: 'Currency' }),
       screen.getByRole('combobox', { name: 'Show price per' }),
-      screen.getByRole('button', { name: '+ Add offer' }),
+      screen.getByRole('button', { name: 'Clear' }),
+      screen.getByRole('button', { name: 'Add offer' }),
       screen.getByRole('button', { name: 'Sort by value' }),
       screen.getByRole('checkbox', { name: 'Multi-pizza deals' }),
     ]
@@ -99,5 +139,41 @@ describe('Toolbar', () => {
       await userEvent.tab()
       expect(document.activeElement).toBe(control)
     }
+  })
+
+  describe('on a phone', () => {
+    const realMatchMedia = window.matchMedia
+
+    afterEach(() => {
+      window.matchMedia = realMatchMedia
+    })
+
+    it('puts Clear among the pinned buttons, after Sort by value, and still has only one', async () => {
+      window.matchMedia = ((query: string) => ({
+        matches: query.includes('max-width'),
+        media: query,
+        addEventListener: (): void => {},
+        removeEventListener: (): void => {},
+      })) as unknown as typeof window.matchMedia
+      renderToolbar()
+
+      expect(screen.getAllByRole('button', { name: 'Clear' })).toHaveLength(1)
+      expect(screen.getByRole('button', { name: 'Sort by value' }).getAttribute('title')).toBe(
+        'Sort by value',
+      )
+      expect(screen.getByRole('button', { name: 'Clear' }).getAttribute('title')).toBe('Clear')
+      const order = [
+        screen.getByRole('combobox', { name: 'Currency' }),
+        screen.getByRole('combobox', { name: 'Show price per' }),
+        screen.getByRole('button', { name: 'Add offer' }),
+        screen.getByRole('button', { name: 'Sort by value' }),
+        screen.getByRole('button', { name: 'Clear' }),
+        screen.getByRole('checkbox', { name: 'Multi-pizza deals' }),
+      ]
+      for (const control of order) {
+        await userEvent.tab()
+        expect(document.activeElement).toBe(control)
+      }
+    })
   })
 })

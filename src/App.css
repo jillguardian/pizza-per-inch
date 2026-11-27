@@ -88,10 +88,17 @@ html {
    own height (flex-start), or they would be squashed to the element's zero height. */
 .page-actions {
   display: flex;
-  align-items: flex-start;
   justify-content: flex-end;
-  gap: var(--mantine-spacing-xs);
   margin-bottom: var(--mantine-spacing-xs);
+}
+
+/* isolation: the backdrop below sits behind this group's own controls, whatever its parent does. */
+.page-actions-group {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--mantine-spacing-xs);
 }
 
 @media (min-width: 48em) {
@@ -102,4 +109,22 @@ html {
     height: 0;
     margin-bottom: 0;
   }
+
+  /* A page-coloured background as tall as the pinned bar, so what scrolls beneath the pinned group
+     (the Clear button, a card) is hidden behind it, as it is behind the pinned buttons. It sits
+     behind the group's own controls, and at the top of the page it is invisible. */
+  .page-actions-group::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    top: calc((var(--page-action-size) - var(--toolbar-bar-height)) / 2);
+    right: 0;
+    left: calc(-1 * var(--mantine-spacing-xs));
+    height: var(--toolbar-bar-height);
+    background: var(--mantine-color-body);
+  }
+}
+
+.offers-empty {
+  grid-column: 1 / -1;
 }

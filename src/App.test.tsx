@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import App from './App'
 import { renderWithMantine } from './test/render'
 
@@ -20,11 +20,21 @@ describe('App', () => {
   it('adds and removes offers', async () => {
     renderWithMantine(<App />)
 
-    await userEvent.click(screen.getByRole('button', { name: '+ Add offer' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Add offer' }))
     expect(screen.getAllByLabelText('Name')).toHaveLength(3)
 
     await userEvent.click(screen.getAllByRole('button', { name: 'Remove offer' })[0])
     expect(screen.getAllByLabelText('Name')).toHaveLength(2)
+  })
+
+  it('says what to do when the last offer is removed', async () => {
+    renderWithMantine(<App />)
+
+    await userEvent.click(screen.getAllByRole('button', { name: 'Remove offer' })[0])
+    await userEvent.click(screen.getAllByRole('button', { name: 'Remove offer' })[0])
+
+    expect(screen.queryAllByLabelText('Name')).toHaveLength(0)
+    expect(screen.getByText('No offers yet. Add an offer to compare prices.')).toBeTruthy()
   })
 
   it('applies the chosen currency to every offer', async () => {
@@ -189,7 +199,7 @@ describe('App', () => {
 
       await userEvent.click(screen.getByRole('button', { name: 'Remove offer' }))
 
-      expect(document.activeElement).toBe(screen.getByRole('button', { name: '+ Add offer' }))
+      expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Add offer' }))
     })
   })
 
@@ -203,7 +213,7 @@ describe('App', () => {
 
     it('announces an added offer', async () => {
       renderWithMantine(<App />)
-      await userEvent.click(screen.getByRole('button', { name: '+ Add offer' }))
+      await userEvent.click(screen.getByRole('button', { name: 'Add offer' }))
       expect(status()).toBe('Offer added. 3 offers.')
     })
 
@@ -250,6 +260,206 @@ describe('App', () => {
       await waitFor(() => expect(status()).toBe('Small is now the best value.'), {
         timeout: 3000,
       })
+    })
+  })
+
+  describe('remembering the comparison', () => {
+    const KEY = 'pizza-per-inch:comparison'
+    const savedText = JSON.stringify({
+      version: 1,
+      offers: [
+        {
+          id: 4,
+          name: 'Friday special',
+          notes: '',
+          price: 21,
+          pizzas: [
+            { id: 6, shape: 'round', diameter: 15, width: 12, length: 16, unit: 'in', quantity: 1 },
+          ],
+        },
+      ],
+      currency: 'EUR',
+      priceUnit: 'cm',
+      bundlesChosen: true,
+    })
+
+    // The currency, price unit and deals setting are preferences, so clearing the offers leaves them alone.
+    function expectSettingsKept(): void {
+      expect((screen.getByRole('combobox', { name: 'Currency' }) as HTMLSelectElement).value).toBe(
+        'GBP',
+      )
+      expect(
+        (screen.getByRole('combobox', { name: 'Show price per' }) as HTMLSelectElement).value,
+      ).toBe('cm')
+      expect(screen.getByRole('checkbox', { name: 'Multi-pizza deals' })).toHaveProperty(
+        'checked',
+        true,
+      )
+    }
+
+    it('starts from the saved comparison', () => {
+      localStorage.setItem(KEY, savedText)
+      renderWithMantine(<App />)
+
+      expect(screen.getAllByLabelText('Name')).toHaveLength(1)
+      expect((screen.getByLabelText('Name') as HTMLInputElement).value).toBe('Friday special')
+      expect((screen.getByRole('combobox', { name: 'Currency' }) as HTMLSelectElement).value).toBe(
+        'EUR',
+      )
+      expect(screen.getByLabelText('Price (EUR)')).toBeTruthy()
+      expect(screen.getByRole('checkbox', { name: 'Multi-pizza deals' })).toHaveProperty(
+        'checked',
+        true,
+      )
+    })
+
+    it('carries on from the saved ids, so a new offer does not reuse one', async () => {
+      localStorage.setItem(KEY, savedText)
+      renderWithMantine(<App />)
+
+      await userEvent.click(screen.getByRole('button', { name: 'Add offer' }))
+
+      expect((screen.getAllByLabelText('Name')[1] as HTMLInputElement).value).toBe('Offer 5')
+    })
+
+    it('saves what is changed, so a reload gets it back', async () => {
+      const first = renderWithMantine(<App />)
+      await userEvent.click(screen.getByRole('button', { name: 'Add offer' }))
+      await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Currency' }), 'GBP')
+      first.unmount()
+
+      renderWithMantine(<App />)
+
+      expect(screen.getAllByLabelText('Name')).toHaveLength(3)
+      expect(screen.getAllByLabelText('Price (GBP)')).toHaveLength(3)
+    })
+
+    it('remembers an edited name', async () => {
+      const first = renderWithMantine(<App />)
+      const name = screen.getAllByLabelText('Name')[0]
+      await userEvent.clear(name)
+      await userEvent.type(name, 'Corner shop')
+      first.unmount()
+
+      renderWithMantine(<App />)
+
+      expect((screen.getAllByLabelText('Name')[0] as HTMLInputElement).value).toBe('Corner shop')
+    })
+
+    it('clears every offer, keeps the settings, says so, and the saved copy follows', async () => {
+      const first = renderWithMantine(<App />)
+      await userEvent.click(screen.getByRole('button', { name: 'Add offer' }))
+      await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Currency' }), 'GBP')
+      await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Show price per' }), 'cm')
+      await userEvent.click(screen.getByRole('checkbox', { name: 'Multi-pizza deals' }))
+      expect(screen.getAllByLabelText('Name')).toHaveLength(3)
+      expect(screen.queryByText(/No offers yet/)).toBeNull()
+
+      await userEvent.click(screen.getByRole('button', { name: 'Clear' }))
+      const dialog = await screen.findByRole('dialog', { name: 'Clear all 3 offers?' })
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Clear' }))
+
+      await waitFor(() => expect(screen.queryAllByLabelText('Name')).toHaveLength(0))
+      expect(screen.getByText('No offers yet. Add an offer to compare prices.')).toBeTruthy()
+      expect(screen.getByRole('status').textContent).toBe(
+        'All offers cleared. Add an offer to start comparing.',
+      )
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+      expect(screen.getByRole('button', { name: 'Clear' })).toHaveProperty('disabled', true)
+      expectSettingsKept()
+
+      first.unmount()
+      renderWithMantine(<App />)
+      expect(screen.queryAllByLabelText('Name')).toHaveLength(0)
+      expect(screen.getByText('No offers yet. Add an offer to compare prices.')).toBeTruthy()
+      expectSettingsKept()
+    })
+
+    it('moves focus to Add offer after clearing, so a keyboard user is not left at the top of the page', async () => {
+      renderWithMantine(<App />)
+      await userEvent.click(screen.getByRole('button', { name: 'Clear' }))
+      await userEvent.click(
+        within(await screen.findByRole('dialog')).getByRole('button', { name: 'Clear' }),
+      )
+
+      await waitFor(() =>
+        expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Add offer' })),
+      )
+    })
+
+    it('gives focus back to Clear when the dialog is cancelled', async () => {
+      renderWithMantine(<App />)
+      await userEvent.click(screen.getByRole('button', { name: 'Clear' }))
+      await userEvent.click(
+        within(await screen.findByRole('dialog')).getByRole('button', { name: 'Cancel' }),
+      )
+
+      await waitFor(() =>
+        expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Clear' })),
+      )
+    })
+
+    it('starts again from "Offer 1" after clearing', async () => {
+      renderWithMantine(<App />)
+      await userEvent.click(screen.getByRole('button', { name: 'Clear' }))
+      await userEvent.click(
+        within(await screen.findByRole('dialog')).getByRole('button', { name: 'Clear' }),
+      )
+      await waitFor(() => expect(screen.queryAllByLabelText('Name')).toHaveLength(0))
+
+      await userEvent.click(screen.getByRole('button', { name: 'Add offer' }))
+
+      expect((screen.getByLabelText('Name') as HTMLInputElement).value).toBe('Offer 1')
+      expect(screen.queryByText(/No offers yet/)).toBeNull()
+    })
+
+    it('keeps the offers when clearing is cancelled', async () => {
+      renderWithMantine(<App />)
+      await userEvent.click(screen.getByRole('button', { name: 'Add offer' }))
+
+      await userEvent.click(screen.getByRole('button', { name: 'Clear' }))
+      const dialog = await screen.findByRole('dialog')
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))
+
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+      expect(screen.getAllByLabelText('Name')).toHaveLength(3)
+    })
+
+    it('keeps the saved comparison when a number field is emptied or only partly typed', async () => {
+      const first = renderWithMantine(<App />)
+      const name = screen.getAllByLabelText('Name')[0]
+      await userEvent.clear(name)
+      await userEvent.type(name, 'Keep me')
+      await userEvent.clear(screen.getAllByLabelText('Price (USD)')[0])
+      await userEvent.clear(screen.getAllByLabelText('Diameter')[0])
+      await userEvent.type(screen.getAllByLabelText('Price (USD)')[1], '.')
+      first.unmount()
+
+      renderWithMantine(<App />)
+
+      expect((screen.getAllByLabelText('Name')[0] as HTMLInputElement).value).toBe('Keep me')
+    })
+
+    it('starts with the example offers when the saved data is damaged', () => {
+      localStorage.setItem(KEY, '{"version": 1, "offers": "oops"')
+      renderWithMantine(<App />)
+
+      expect(screen.getAllByLabelText('Name')).toHaveLength(2)
+    })
+
+    it('still works, with the examples, when storage is blocked', async () => {
+      vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+        throw new Error('storage is blocked')
+      })
+      vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+        throw new Error('storage is blocked')
+      })
+      renderWithMantine(<App />)
+
+      expect(screen.getAllByLabelText('Name')).toHaveLength(2)
+      await userEvent.click(screen.getByRole('button', { name: 'Add offer' }))
+      expect(screen.getAllByLabelText('Name')).toHaveLength(3)
+      vi.restoreAllMocks()
     })
   })
 })

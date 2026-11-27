@@ -1,8 +1,13 @@
 import { Button, Checkbox, NativeSelect } from '@mantine/core'
+import { useMediaQuery } from '@mantine/hooks'
 import type { ReactElement } from 'react'
 import { listCurrencies, type Currency } from '../lib/currencies'
 import type { SizeUnit } from '../lib/pizza'
+import { PHONE_QUERY } from './breakpoints'
+import { ClearButton } from './ClearButton'
 import { ADD_OFFER_ID } from './focusIds'
+import { PlusIcon } from './PlusIcon'
+import { SortIcon } from './SortIcon'
 import './Toolbar.css'
 
 const CURRENCIES = listCurrencies()
@@ -16,6 +21,8 @@ interface ToolbarProps {
   bundlesLocked: boolean
   onAddOffer: () => void
   onSortOffers: () => void
+  offerCount: number
+  onClear: () => void
   onBundlesChange: (enabled: boolean) => void
 }
 
@@ -42,8 +49,14 @@ export function Toolbar({
   bundlesLocked,
   onAddOffer,
   onSortOffers,
+  offerCount,
+  onClear,
   onBundlesChange,
 }: Readonly<ToolbarProps>): ReactElement {
+  // Clear joins the pinned buttons on a phone, and sits at the right end of the settings row
+  // elsewhere. It is rendered in one place only, so there is never a second Clear button hidden
+  // in the page.
+  const phone = useMediaQuery(PHONE_QUERY, false, { getInitialValueInEffect: false })
   return (
     <>
       <div className="toolbar-settings">
@@ -61,15 +74,32 @@ export function Toolbar({
           value={priceUnit}
           onChange={(event) => onPriceUnitChange(event.currentTarget.value as SizeUnit)}
         />
+        {!phone && (
+          <div className="toolbar-clear">
+            <ClearButton offerCount={offerCount} onConfirm={onClear} iconOnly={phone} />
+          </div>
+        )}
       </div>
       <div className="toolbar-strip" aria-hidden="true" />
       <div className="toolbar-actions">
-        <Button id={ADD_OFFER_ID} onClick={onAddOffer}>
-          + Add offer
+        <Button id={ADD_OFFER_ID} leftSection={<PlusIcon />} onClick={onAddOffer}>
+          Add offer
         </Button>
-        <Button variant="default" onClick={onSortOffers}>
-          Sort by value
+        <Button
+          variant="default"
+          leftSection={<SortIcon />}
+          onClick={onSortOffers}
+          aria-label="Sort by value"
+          title={phone ? 'Sort by value' : undefined}
+          classNames={{ root: 'toolbar-icon-only', section: 'toolbar-button-icon' }}
+        >
+          <span className="toolbar-button-label">Sort by value</span>
         </Button>
+        {phone && (
+          <div className="toolbar-clear">
+            <ClearButton offerCount={offerCount} onConfirm={onClear} iconOnly={phone} />
+          </div>
+        )}
       </div>
       <Checkbox
         className="toolbar-checkbox"

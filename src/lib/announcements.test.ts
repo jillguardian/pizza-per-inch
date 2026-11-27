@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   bestValue,
   NOTHING_TO_SORT,
+  OFFERS_CLEARED,
   offerAdded,
   offerRemoved,
   pizzaAdded,
@@ -45,5 +46,9 @@ describe('announcements', () => {
   it('calls an offer with no name by a spoken name', () => {
     expect(offerRemoved('  ', 1)).toBe('Unnamed offer removed. 1 offer left.')
     expect(sortedByValue(['', 'Large'])).toBe('Sorted by value, best first: Unnamed offer, Large.')
+  })
+
+  it('says that every offer is gone and what to do next', () => {
+    expect(OFFERS_CLEARED).toBe('All offers cleared. Add an offer to start comparing.')
   })
 })

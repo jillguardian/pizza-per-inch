@@ -41,6 +41,7 @@ Rules for working in this repo, and why they exist. Add new ones here, not in `C
 
 - **Colors are chosen in `src/theme.ts` only**, as named tokens: text colors with a light and a dark value (`mutedText`, `bestValue`), and fills with one value and white text on them (`primary` and the rank colors). Components and styles use the names: Mantine's `c="dimmed"`, the rank palettes (`rank-1`, `rank-2`, `rank-3`, `rank-other`, handed out by `rankColor()`), or the CSS variable `--app-color-best-value`. Never write a hex value, a Mantine palette name (`green`) or a palette shade variable (`--mantine-color-green-6`) in a component or a stylesheet.
   _Why:_ one place decides the colors, so contrast can be checked once and a light and dark theme only needs the values changed there.
+- **The test that finds stray colors reads the stylesheets too.** Vitest returns empty text for a `.css` file unless `test.css` is on, so `vite.config.ts` sets it, and a test fails if the stylesheets read back empty.
 - **Every token needs a declared contrast** in `src/theme.test.ts`: text on each surface it sits on, or white text on the fill. Text needs 4.5:1 (WCAG AA), in light and in dark. A new text token fails the "left unchecked" test until it is declared, and a new fill is checked automatically.
 - **The theme toggle** (light, dark, system) is Mantine's own color scheme. It saves the choice in `localStorage`, and a small script in `index.html` applies it before the page paints, so a saved "dark" does not flash light. That script repeats Mantine's storage key and attribute name, and a test fails if Mantine's differ.
 - **How to add a color:**
@@ -49,6 +50,17 @@ Rules for working in this repo, and why they exist. Add new ones here, not in `C
   3. Declare its contrast pair in `src/theme.test.ts`.
 - **Not covered:** the pizza drawing is artwork (`PizzaVisual.tsx`). The red remove button and the grey arrows use Mantine's own colors, are allowed by name in the test, and are checked by axe and by eye.
 - **Mantine details** (9.8.x): `cssVariablesResolver` returns `{ variables, light, dark }`. Overriding Mantine's own `--mantine-color-dimmed` works, and it also fixes the description under inputs. A `color` prop on a filled component takes a palette name, so the rank colors are palettes of one shade.
+
+## Saved data
+
+- **The comparison is remembered in `localStorage`** under `pizza-per-inch:comparison`: the offers (with their pizzas), the currency, the price unit and the "Multi-pizza deals" checkbox. `src/lib/saved.ts` has the shape and the checks, and `src/lib/savedStorage.ts` reads and writes it. The theme is remembered separately, by Mantine.
+- **Bump `SAVED_VERSION` when the saved shape changes** (a field added to, renamed in or retyped in `Offer`, `Pizza` or the comparison). Old data is then discarded, not migrated. Write a migration only if someone's saved work is worth keeping.
+  _Why:_ a half-understood comparison is worse than a fresh one, and old data must never break the page.
+- **Loading checks structure and types, not ranges.** The inputs can briefly hold values that are not final (a size of 0, say), and one of them must not throw away the whole comparison. Range checks belong to the input validation work. Any structural problem makes the whole comparison fall back to the defaults.
+- **Two open tabs overwrite each other:** each keeps its own state and saves it on every change, and nothing reads the saved copy again after the first load, so the last tab to change anything wins. That is accepted for a one-person tool. Listening for the `storage` event would fix it, at the cost of merging.
+- **Storage may be missing, blocked or full.** Reading failures mean "nothing saved", and a failed write is ignored. The page works either way.
+- **Clear removes every offer** after a confirmation, and leaves the currency, price unit and deals setting alone, because those are preferences and not the comparison. The page then says "No offers yet" (it does the same when the last offer is removed by hand). The saved copy follows, because it is saved like any other change. The two example offers are for a first visit only, and there is no way back to them.
+- **Tests start with empty storage:** `src/test/setup.ts` clears `localStorage` after every test, so one test cannot leave a comparison for the next.
 
 ## Accessibility
 
@@ -65,15 +77,15 @@ Rules for working in this repo, and why they exist. Add new ones here, not in `C
 
 Layouts are checked by hand in a real browser at these widths (jsdom can't lay out a page, so the tests don't cover them). Below 320px nothing is promised.
 
-| Size    | Width         | Checked at | Toolbar                                                                                                                               |
-| ------- | ------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Mobile  | 320–767px     | 320, 375   | Currency and price unit share a row at full width. The pinned add and sort bar is the second row, and the checkbox has the third row. |
-| Tablet  | 768–1023px    | 768        | The selects are equal and full width. The second row has the pinned add and sort buttons on the left and the checkbox on the right.   |
-| Desktop | 1024px and up | 1024, 1280 | The selects keep a natural width. The second row has the pinned add and sort buttons and the checkbox side by side, all on the left.  |
+| Size    | Width         | Checked at | Toolbar                                                                                                                                                                                                |
+| ------- | ------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Mobile  | 320–767px     | 320, 375   | Currency and price unit share a row at full width. The pinned bar is the second row: Add offer (icon and text), then Sort and Clear as icons only, Clear at the right. The checkbox has the third row. |
+| Tablet  | 768–1023px    | 768        | The selects share the first row with Clear at the right end. The second row has the pinned add and sort buttons (icon and text) on the left and the checkbox on the right.                             |
+| Desktop | 1024px and up | 1024, 1280 | The selects keep a natural width and Clear is at the right end of their row. The second row has the pinned add and sort buttons and the checkbox side by side, all on the left.                        |
 
-- The layout breakpoints are `48em` (768px) and `64em` (1024px). Media queries can't read CSS variables, so the values are repeated in `App.css` and `Toolbar.css`; change them together.
+- The layout breakpoints are `48em` (768px) and `64em` (1024px). Media queries can't read CSS variables, so the values are repeated in `App.css` and `Toolbar.css`; change them together. `Toolbar.tsx` repeats the 48em one too (`PHONE`): below it Clear is rendered among the pinned buttons, and above it in the settings row. It is rendered in one place only, so there is never a second Clear button hidden in the page.
 - Design for 375px first, and make sure nothing scrolls sideways at 320px.
-- Only the add and sort buttons are pinned. Settings are chosen once, so they scroll away.
+- Only the add and sort buttons (and Clear, on a phone) are pinned. Settings are chosen once, so they scroll away.
   _Why:_ a tall pinned toolbar takes too much of a phone screen.
 
 ## Structure
