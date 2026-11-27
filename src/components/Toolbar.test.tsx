@@ -45,6 +45,14 @@ const toolbarCss = Object.values(
   >,
 )[0]
 
+// Mantine marks the switch's root with where its label sits.
+function labelPositionOfDealsSwitch(): string | null | undefined {
+  return screen
+    .getByRole('switch', { name: 'Multi-pizza deals' })
+    .closest('[data-label-position]')
+    ?.getAttribute('data-label-position')
+}
+
 describe('Toolbar', () => {
   it('asks to add an offer', async () => {
     const { onAddOffer } = renderToolbar()
@@ -107,21 +115,51 @@ describe('Toolbar', () => {
 
   it('reports turning bundles on', async () => {
     const { onBundlesChange } = renderToolbar()
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Multi-pizza deals' }))
+    await userEvent.click(screen.getByRole('switch', { name: 'Multi-pizza deals' }))
     expect(onBundlesChange).toHaveBeenCalledWith(true)
+  })
+
+  it('puts the label before the switch from 768px, so the switch stays at the right edge', () => {
+    renderToolbar()
+    expect(labelPositionOfDealsSwitch()).toBe('left')
+  })
+
+  it('is a switch, off to begin with, named "Multi-pizza deals"', () => {
+    renderToolbar()
+    const deals = screen.getByRole<HTMLInputElement>('switch', { name: 'Multi-pizza deals' })
+    expect(deals.checked).toBe(false)
+    expect(deals.disabled).toBe(false)
   })
 
   it('keeps bundles on and locked while an offer needs them', () => {
     renderToolbar({ showBundles: true, bundlesLocked: true })
-    const checkbox = screen.getByRole<HTMLInputElement>('checkbox', { name: 'Multi-pizza deals' })
-    expect(checkbox.checked).toBe(true)
-    expect(checkbox.disabled).toBe(true)
-    expect(screen.getByText('An offer has several pizzas.')).toBeTruthy()
+    const deals = screen.getByRole<HTMLInputElement>('switch', { name: 'Multi-pizza deals' })
+    expect(deals.checked).toBe(true)
+    expect(deals.disabled).toBe(true)
   })
 
-  it('gives no lock explanation while the checkbox is free', () => {
+  it('says it is in use when locked, and a screen reader hears why', () => {
+    renderToolbar({ showBundles: true, bundlesLocked: true })
+    const deals = screen.getByRole('switch', { name: 'Multi-pizza deals' })
+
+    expect(screen.getByText(/\(in use\)/)).toBeTruthy()
+    const reason = document.getElementById(deals.getAttribute('aria-describedby') ?? '')
+    expect(reason?.textContent).toBe('An offer has several pizzas.')
+  })
+
+  it('keeps the same name for a screen reader when it is locked, hiding the visible suffix', () => {
+    renderToolbar({ showBundles: true, bundlesLocked: true })
+    expect(screen.getByRole('switch', { name: 'Multi-pizza deals' })).toBeTruthy()
+    expect(screen.getByText(/\(in use\)/).getAttribute('aria-hidden')).toBe('true')
+  })
+
+  it('says nothing about being locked while it is free', () => {
     renderToolbar()
+    expect(screen.queryByText(/in use/)).toBeNull()
     expect(screen.queryByText('An offer has several pizzas.')).toBeNull()
+    expect(
+      screen.getByRole('switch', { name: 'Multi-pizza deals' }).getAttribute('aria-describedby'),
+    ).toBeNull()
   })
 
   it('tabs through the controls in the order they appear on screen', async () => {
@@ -132,7 +170,7 @@ describe('Toolbar', () => {
       screen.getByRole('button', { name: 'Clear' }),
       screen.getByRole('button', { name: 'Add offer' }),
       screen.getByRole('button', { name: 'Sort by value' }),
-      screen.getByRole('checkbox', { name: 'Multi-pizza deals' }),
+      screen.getByRole('switch', { name: 'Multi-pizza deals' }),
     ]
 
     for (const control of order) {
@@ -157,6 +195,7 @@ describe('Toolbar', () => {
       })) as unknown as typeof window.matchMedia
       renderToolbar()
 
+      expect(labelPositionOfDealsSwitch()).toBe('right')
       expect(screen.getAllByRole('button', { name: 'Clear' })).toHaveLength(1)
       expect(screen.getByRole('button', { name: 'Sort by value' }).getAttribute('title')).toBe(
         'Sort by value',
@@ -168,7 +207,7 @@ describe('Toolbar', () => {
         screen.getByRole('button', { name: 'Add offer' }),
         screen.getByRole('button', { name: 'Sort by value' }),
         screen.getByRole('button', { name: 'Clear' }),
-        screen.getByRole('checkbox', { name: 'Multi-pizza deals' }),
+        screen.getByRole('switch', { name: 'Multi-pizza deals' }),
       ]
       for (const control of order) {
         await userEvent.tab()

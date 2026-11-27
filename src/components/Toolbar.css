@@ -59,7 +59,7 @@
 
 /* A page-coloured background reaching both edges of the screen, pinned with the buttons. It is
    invisible at the top of the page and hides the cards that scroll beneath the buttons. It sits
-   below the settings and checkbox (z-index 11), so it never covers them, and the buttons sit
+   below the settings and deals switch (z-index 11), so it never covers them, and the buttons sit
    above them, so a setting that scrolls away never draws over the buttons. */
 .toolbar-strip {
   z-index: 10;
@@ -70,7 +70,7 @@
   clip-path: inset(0 -100vmax);
 }
 
-.toolbar-checkbox {
+.toolbar-deals {
   position: relative;
   z-index: 11;
   grid-column: 1;
@@ -88,7 +88,7 @@
     justify-self: start;
   }
 
-  .toolbar-checkbox {
+  .toolbar-deals {
     grid-column: 2;
     grid-row: 2;
     justify-self: end;
@@ -111,7 +111,8 @@
     flex: 0 0 180px;
   }
 
-  .toolbar-checkbox {
-    justify-self: start;
+  /* The right-hand column takes the rest of the width, so the switch reaches the right edge. */
+  .toolbar-deals {
+    grid-column: 3;
   }
 }

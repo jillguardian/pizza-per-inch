@@ -1,4 +1,4 @@
-import { Button, Checkbox, NativeSelect } from '@mantine/core'
+import { Button, NativeSelect, Switch, VisuallyHidden } from '@mantine/core'
 import { useMediaQuery } from '@mantine/hooks'
 import type { ReactElement } from 'react'
 import { listCurrencies, type Currency } from '../lib/currencies'
@@ -34,6 +34,10 @@ const CURRENCY_OPTIONS = [
   { group: 'Common', items: toOptions(CURRENCIES.common) },
   { group: 'All currencies', items: toOptions(CURRENCIES.other) },
 ]
+
+// While an offer has several pizzas, the switch stays on and cannot be turned off. The sighted
+// reason is the "(in use)" in the label, which adds no height. A screen reader hears the sentence.
+const LOCKED_REASON_ID = 'deals-locked-reason'
 
 const PRICE_UNIT_OPTIONS = [
   { value: 'in', label: 'Square inch' },
@@ -101,14 +105,27 @@ export function Toolbar({
           </div>
         )}
       </div>
-      <Checkbox
-        className="toolbar-checkbox"
-        label="Multi-pizza deals"
-        description={bundlesLocked ? 'An offer has several pizzas.' : undefined}
-        checked={showBundles}
-        disabled={bundlesLocked}
-        onChange={(event) => onBundlesChange(event.currentTarget.checked)}
-      />
+      <div className="toolbar-deals">
+        {/* On a phone the switch is at the left of its own row, with its label after it. From 768px
+            it is at the right, with its label before it, so the switch itself stays at the right
+            edge, whether or not "(in use)" is added to the label. */}
+        <Switch
+          labelPosition={phone ? 'right' : 'left'}
+          label={
+            <>
+              Multi-pizza deals
+              {bundlesLocked && <span aria-hidden="true"> (in use)</span>}
+            </>
+          }
+          checked={showBundles}
+          disabled={bundlesLocked}
+          aria-describedby={bundlesLocked ? LOCKED_REASON_ID : undefined}
+          onChange={(event) => onBundlesChange(event.currentTarget.checked)}
+        />
+        {bundlesLocked && (
+          <VisuallyHidden id={LOCKED_REASON_ID}>An offer has several pizzas.</VisuallyHidden>
+        )}
+      </div>
     </>
   )
 }

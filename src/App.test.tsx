@@ -59,7 +59,7 @@ describe('App', () => {
     if (!offer) throw new Error('Expected the offer card')
     expect(within(offer).getByText('$0.1146 / in²')).toBeTruthy()
 
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Multi-pizza deals' }))
+    await userEvent.click(screen.getByRole('switch', { name: 'Multi-pizza deals' }))
     await userEvent.click(within(offer).getByRole('button', { name: 'Add pizza' }))
 
     expect(within(offer).getByText('Pizza 2 of 2')).toBeTruthy()
@@ -70,7 +70,7 @@ describe('App', () => {
     renderWithMantine(<App />)
     const offer = screen.getAllByLabelText<HTMLInputElement>('Name')[0].closest('section')
     if (!offer) throw new Error('Expected the offer card')
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Multi-pizza deals' }))
+    await userEvent.click(screen.getByRole('switch', { name: 'Multi-pizza deals' }))
     await userEvent.click(within(offer).getByRole('button', { name: 'Add pizza' }))
 
     await userEvent.click(within(offer).getByRole('button', { name: 'Remove pizza' }))
@@ -79,23 +79,23 @@ describe('App', () => {
     expect(within(offer).getByText('$0.1146 / in²')).toBeTruthy()
   })
 
-  it('hides bundle controls until the checkbox is ticked', async () => {
+  it('hides bundle controls until the deals switch is turned on', async () => {
     renderWithMantine(<App />)
     expect(screen.queryByRole('button', { name: 'Add pizza' })).toBeNull()
 
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Multi-pizza deals' }))
+    await userEvent.click(screen.getByRole('switch', { name: 'Multi-pizza deals' }))
 
     expect(screen.getAllByRole('button', { name: 'Add pizza' })).toHaveLength(2)
   })
 
   it('keeps bundles on while an offer is a bundle', async () => {
     renderWithMantine(<App />)
-    const checkbox = screen.getByRole<HTMLInputElement>('checkbox', { name: 'Multi-pizza deals' })
-    await userEvent.click(checkbox)
+    const deals = screen.getByRole<HTMLInputElement>('switch', { name: 'Multi-pizza deals' })
+    await userEvent.click(deals)
     await userEvent.click(screen.getAllByRole('button', { name: 'Add pizza' })[0])
 
-    expect(checkbox.disabled).toBe(true)
-    expect(checkbox.checked).toBe(true)
+    expect(deals.disabled).toBe(true)
+    expect(deals.checked).toBe(true)
   })
 
   describe('sorting', () => {
@@ -142,7 +142,7 @@ describe('App', () => {
       screen.getAllByRole('button', { name: 'Remove pizza' })[0]
 
     async function showBundleControls(): Promise<void> {
-      await userEvent.click(screen.getByRole('checkbox', { name: 'Multi-pizza deals' }))
+      await userEvent.click(screen.getByRole('switch', { name: 'Multi-pizza deals' }))
     }
 
     it('stays on Add pizza after adding a pizza', async () => {
@@ -240,7 +240,7 @@ describe('App', () => {
 
     it('announces an added and a removed pizza', async () => {
       renderWithMantine(<App />)
-      await userEvent.click(screen.getByRole('checkbox', { name: 'Multi-pizza deals' }))
+      await userEvent.click(screen.getByRole('switch', { name: 'Multi-pizza deals' }))
 
       await userEvent.click(screen.getAllByRole('button', { name: 'Add pizza' })[0])
       expect(status()).toBe('Pizza 2 of 2 added to Small.')
@@ -291,7 +291,7 @@ describe('App', () => {
       expect(
         (screen.getByRole('combobox', { name: 'Show price per' }) as HTMLSelectElement).value,
       ).toBe('cm')
-      expect(screen.getByRole('checkbox', { name: 'Multi-pizza deals' })).toHaveProperty(
+      expect(screen.getByRole('switch', { name: 'Multi-pizza deals' })).toHaveProperty(
         'checked',
         true,
       )
@@ -307,7 +307,7 @@ describe('App', () => {
         'EUR',
       )
       expect(screen.getByLabelText('Price (EUR)')).toBeTruthy()
-      expect(screen.getByRole('checkbox', { name: 'Multi-pizza deals' })).toHaveProperty(
+      expect(screen.getByRole('switch', { name: 'Multi-pizza deals' })).toHaveProperty(
         'checked',
         true,
       )
@@ -351,7 +351,7 @@ describe('App', () => {
       await userEvent.click(screen.getByRole('button', { name: 'Add offer' }))
       await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Currency' }), 'GBP')
       await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Show price per' }), 'cm')
-      await userEvent.click(screen.getByRole('checkbox', { name: 'Multi-pizza deals' }))
+      await userEvent.click(screen.getByRole('switch', { name: 'Multi-pizza deals' }))
       expect(screen.getAllByLabelText('Name')).toHaveLength(3)
       expect(screen.queryByText(/No offers yet/)).toBeNull()
 

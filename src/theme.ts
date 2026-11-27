@@ -40,7 +40,7 @@ export const theme = createTheme({
   // Mantine's components fade and nudge for 0.1 to 0.15 s. With this on, they stop when the visitor
   // has asked their system for reduced motion.
   respectReducedMotion: true,
-  // Mantine's buttons and checkboxes keep the arrow cursor unless told otherwise.
+  // Mantine's buttons, checkboxes and switches keep the arrow cursor unless told otherwise.
   cursorType: 'pointer',
   primaryShade: { light: PRIMARY_SHADE, dark: PRIMARY_SHADE },
   // Each rank color is a palette of one shade, and rankColor() hands out the palette names.
