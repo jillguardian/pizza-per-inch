@@ -120,8 +120,10 @@ export default function App(): ReactElement {
     <Container component="main" size="lg" py="md">
       <LiveRegion message={message} />
       <div className="page-actions">
-        <ColorSchemeToggle />
-        <ProjectLinks />
+        <div className="page-actions-group">
+          <ColorSchemeToggle />
+          <ProjectLinks />
+        </div>
       </div>
       <Title order={1} mb="xs">
         🍕 Pizza per Inch
