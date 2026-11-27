@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import App from './App'
 import { renderWithMantine } from './test/render'
 
@@ -250,6 +250,98 @@ describe('App', () => {
       await waitFor(() => expect(status()).toBe('Small is now the best value.'), {
         timeout: 3000,
       })
+    })
+  })
+
+  describe('remembering the comparison', () => {
+    const KEY = 'pizza-per-inch:comparison'
+    const savedText = JSON.stringify({
+      version: 1,
+      offers: [
+        {
+          id: 4,
+          name: 'Friday special',
+          notes: '',
+          price: 21,
+          pizzas: [
+            { id: 6, shape: 'round', diameter: 15, width: 12, length: 16, unit: 'in', quantity: 1 },
+          ],
+        },
+      ],
+      currency: 'EUR',
+      priceUnit: 'cm',
+      bundlesChosen: true,
+    })
+
+    it('starts from the saved comparison', () => {
+      localStorage.setItem(KEY, savedText)
+      renderWithMantine(<App />)
+
+      expect(screen.getAllByLabelText('Name')).toHaveLength(1)
+      expect((screen.getByLabelText('Name') as HTMLInputElement).value).toBe('Friday special')
+      expect((screen.getByRole('combobox', { name: 'Currency' }) as HTMLSelectElement).value).toBe(
+        'EUR',
+      )
+      expect(screen.getByLabelText('Price (EUR)')).toBeTruthy()
+      expect(screen.getByRole('checkbox', { name: 'Multi-pizza deals' })).toHaveProperty(
+        'checked',
+        true,
+      )
+    })
+
+    it('carries on from the saved ids, so a new offer does not reuse one', async () => {
+      localStorage.setItem(KEY, savedText)
+      renderWithMantine(<App />)
+
+      await userEvent.click(screen.getByRole('button', { name: '+ Add offer' }))
+
+      expect((screen.getAllByLabelText('Name')[1] as HTMLInputElement).value).toBe('Offer 5')
+    })
+
+    it('saves what is changed, so a reload gets it back', async () => {
+      const first = renderWithMantine(<App />)
+      await userEvent.click(screen.getByRole('button', { name: '+ Add offer' }))
+      await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Currency' }), 'GBP')
+      first.unmount()
+
+      renderWithMantine(<App />)
+
+      expect(screen.getAllByLabelText('Name')).toHaveLength(3)
+      expect(screen.getAllByLabelText('Price (GBP)')).toHaveLength(3)
+    })
+
+    it('remembers an edited name', async () => {
+      const first = renderWithMantine(<App />)
+      const name = screen.getAllByLabelText('Name')[0]
+      await userEvent.clear(name)
+      await userEvent.type(name, 'Corner shop')
+      first.unmount()
+
+      renderWithMantine(<App />)
+
+      expect((screen.getAllByLabelText('Name')[0] as HTMLInputElement).value).toBe('Corner shop')
+    })
+
+    it('starts with the example offers when the saved data is damaged', () => {
+      localStorage.setItem(KEY, '{"version": 1, "offers": "oops"')
+      renderWithMantine(<App />)
+
+      expect(screen.getAllByLabelText('Name')).toHaveLength(2)
+    })
+
+    it('still works, with the examples, when storage is blocked', async () => {
+      vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+        throw new Error('storage is blocked')
+      })
+      vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+        throw new Error('storage is blocked')
+      })
+      renderWithMantine(<App />)
+
+      expect(screen.getAllByLabelText('Name')).toHaveLength(2)
+      await userEvent.click(screen.getByRole('button', { name: '+ Add offer' }))
+      expect(screen.getAllByLabelText('Name')).toHaveLength(3)
+      vi.restoreAllMocks()
     })
   })
 })

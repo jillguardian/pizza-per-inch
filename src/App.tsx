@@ -18,13 +18,15 @@ import {
   pizzaRemoved,
   sortedByValue,
 } from './lib/announcements'
-import { detectLocaleCurrency } from './lib/currencies'
+import { detectLocaleCurrency, isSupportedCurrency } from './lib/currencies'
 import { isBundle, rankOffers, sortByRank, type Offer } from './lib/offer'
 import { outline, type SizeUnit } from './lib/pizza'
+import { loadSaved, saveComparison } from './lib/savedStorage'
 
 const DEFAULT_CURRENCY = detectLocaleCurrency() ?? 'USD'
 
 export default function App(): ReactElement {
+  const [saved] = useState(() => loadSaved(isSupportedCurrency))
   const {
     offers,
     addOffer,
@@ -34,10 +36,14 @@ export default function App(): ReactElement {
     removePizza,
     removeOffer,
     sortOffers,
-  } = useOffers()
-  const [currency, setCurrency] = useState(DEFAULT_CURRENCY)
-  const [priceUnit, setPriceUnit] = useState<SizeUnit>('in')
-  const [bundlesChosen, setBundlesChosen] = useState(false)
+  } = useOffers(saved?.offers)
+  const [currency, setCurrency] = useState(saved?.currency ?? DEFAULT_CURRENCY)
+  const [priceUnit, setPriceUnit] = useState<SizeUnit>(saved?.priceUnit ?? 'in')
+  const [bundlesChosen, setBundlesChosen] = useState(saved?.bundlesChosen ?? false)
+
+  useEffect(() => {
+    saveComparison({ offers, currency, priceUnit, bundlesChosen })
+  }, [offers, currency, priceUnit, bundlesChosen])
 
   const ranks = rankOffers(offers)
   const { message, announce } = useAnnouncer()

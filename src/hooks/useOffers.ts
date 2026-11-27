@@ -15,11 +15,13 @@ interface UseOffers {
   sortOffers: () => void
 }
 
-export function useOffers(): UseOffers {
-  const [offers, setOffers] = useState<Offer[]>(INITIAL_OFFERS)
-  const nextId = useRef(Math.max(...INITIAL_OFFERS.map((offer) => offer.id)) + 1)
+// Ids carry on from the highest one given, so an offer or pizza added later never reuses one. The
+// list may be empty, so the highest id starts from 0.
+export function useOffers(initialOffers: Offer[] = INITIAL_OFFERS): UseOffers {
+  const [offers, setOffers] = useState<Offer[]>(initialOffers)
+  const nextId = useRef(Math.max(0, ...initialOffers.map((offer) => offer.id)) + 1)
   const nextPizzaId = useRef(
-    Math.max(...INITIAL_OFFERS.flatMap((offer) => offer.pizzas.map((pizza) => pizza.id))) + 1,
+    Math.max(0, ...initialOffers.flatMap((offer) => offer.pizzas.map((pizza) => pizza.id))) + 1,
   )
 
   function addOffer(): void {

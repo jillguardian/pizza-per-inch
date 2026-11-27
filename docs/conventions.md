@@ -50,6 +50,15 @@ Rules for working in this repo, and why they exist. Add new ones here, not in `C
 - **Not covered:** the pizza drawing is artwork (`PizzaVisual.tsx`). The red remove button and the grey arrows use Mantine's own colors, are allowed by name in the test, and are checked by axe and by eye.
 - **Mantine details** (9.8.x): `cssVariablesResolver` returns `{ variables, light, dark }`. Overriding Mantine's own `--mantine-color-dimmed` works, and it also fixes the description under inputs. A `color` prop on a filled component takes a palette name, so the rank colors are palettes of one shade.
 
+## Saved data
+
+- **The comparison is remembered in `localStorage`** under `pizza-per-inch:comparison`: the offers (with their pizzas), the currency, the price unit and the "Multi-pizza deals" checkbox. `src/lib/saved.ts` has the shape and the checks, and `src/lib/savedStorage.ts` reads and writes it. The theme is remembered separately, by Mantine.
+- **Bump `SAVED_VERSION` when the saved shape changes** (a field added to, renamed in or retyped in `Offer`, `Pizza` or the comparison). Old data is then discarded, not migrated. Write a migration only if someone's saved work is worth keeping.
+  _Why:_ a half-understood comparison is worse than a fresh one, and old data must never break the page.
+- **Loading checks structure and types, not ranges.** The inputs can briefly hold values that are not final (a size of 0, say), and one of them must not throw away the whole comparison. Range checks belong to the input validation (#5). Any structural problem makes the whole comparison fall back to the defaults.
+- **Storage may be missing, blocked or full.** Reading failures mean "nothing saved", and a failed write is ignored. The page works either way.
+- **Tests start with empty storage:** `src/test/setup.ts` clears `localStorage` after every test, so one test cannot leave a comparison for the next.
+
 ## Accessibility
 
 - **`npm run a11y` runs axe in real Chrome** against the production build, at 375, 768 and 1280px, in light and dark, on the example offers and on a busy page (bundle controls on, four ranked offers, sorted). It fails on any WCAG 2.x A/AA or best-practice violation, on an error thrown by the page, and on a run that could not finish. axe's "incomplete" results (checks it could not decide) are printed as notes, not failures. CI runs it as the `accessibility` job.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { detectLocaleCurrency, listCurrencies } from './currencies'
+import { detectLocaleCurrency, isSupportedCurrency, listCurrencies } from './currencies'
 
 describe('detectLocaleCurrency', () => {
   it('maps a locale region to its currency', () => {
@@ -26,5 +26,18 @@ describe('listCurrencies', () => {
 
   it('gives readable names', () => {
     expect(listCurrencies('en-US').common[0]).toEqual({ code: 'USD', name: 'US Dollar' })
+  })
+})
+
+describe('isSupportedCurrency', () => {
+  it('knows the currencies the browser can format', () => {
+    expect(isSupportedCurrency('USD')).toBe(true)
+    expect(isSupportedCurrency('EUR')).toBe(true)
+  })
+
+  it('does not know made-up or lowercase codes', () => {
+    expect(isSupportedCurrency('XXZ')).toBe(false)
+    expect(isSupportedCurrency('usd')).toBe(false)
+    expect(isSupportedCurrency('')).toBe(false)
   })
 })

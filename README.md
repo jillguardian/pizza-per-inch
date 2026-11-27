@@ -7,6 +7,7 @@ Compare pizza prices by cost per square inch (or cm²). Enter each pizza's diame
 - Round pizzas with name, diameter, price, and notes
 - One currency per comparison, with a size unit (inches or cm) per pizza
 - Best-value highlight
+- Remembers your comparison in this browser. It stays on your device: nothing is sent anywhere.
 
 ## Tech stack
 

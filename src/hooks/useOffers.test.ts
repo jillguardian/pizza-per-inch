@@ -1,6 +1,7 @@
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { INITIAL_OFFERS } from '../lib/offer'
+import { createPizza } from '../lib/pizza'
 import { useOffers } from './useOffers'
 
 describe('useOffers', () => {
@@ -109,5 +110,35 @@ describe('useOffers', () => {
     act(() => result.current.removeOffer(1))
 
     expect(result.current.offers.map((o) => o.id)).toEqual([2])
+  })
+
+  describe('starting from saved offers', () => {
+    const saved = [
+      { id: 5, name: 'Saved', notes: '', price: 10, pizzas: [{ ...createPizza(8, 14) }] },
+    ]
+
+    it('starts with them in place of the examples', () => {
+      const { result } = renderHook(() => useOffers(saved))
+      expect(result.current.offers).toEqual(saved)
+    })
+
+    it('carries the ids on from the highest saved ones', () => {
+      const { result } = renderHook(() => useOffers(saved))
+
+      act(() => result.current.addOffer())
+      act(() => result.current.addPizza(5))
+
+      expect(result.current.offers[1].id).toBe(6)
+      expect(result.current.offers[0].pizzas.map((p) => p.id)).toEqual([8, 9])
+    })
+
+    it('starts the ids at 1 when there are no offers, and does not break', () => {
+      const { result } = renderHook(() => useOffers([]))
+      expect(result.current.offers).toEqual([])
+
+      act(() => result.current.addOffer())
+
+      expect(result.current.offers.map((o) => o.id)).toEqual([1])
+    })
   })
 })

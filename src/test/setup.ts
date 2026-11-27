@@ -24,4 +24,8 @@ class ResizeObserverStub {
 }
 window.ResizeObserver = ResizeObserverStub
 
-afterEach(cleanup)
+// The comparison is remembered in localStorage, so a test must not leave one for the next.
+afterEach(() => {
+  cleanup()
+  localStorage.clear()
+})
