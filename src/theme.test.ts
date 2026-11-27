@@ -102,6 +102,12 @@ describe('raw colors', () => {
     { query: '?raw', import: 'default', eager: true },
   ) as Record<string, string>
 
+  it('reads the stylesheets as well as the code, so a color in a stylesheet is caught too', () => {
+    const stylesheets = Object.entries(sources).filter(([file]) => file.endsWith('.css'))
+    expect(stylesheets.length).toBeGreaterThan(0)
+    for (const [file, text] of stylesheets) expect(text.length, file).toBeGreaterThan(0)
+  })
+
   it.each([
     ['a hex value', 'fill="#c0392b"'],
     ['a short hex value', 'color: #fff;'],
