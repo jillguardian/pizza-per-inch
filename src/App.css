@@ -9,7 +9,7 @@ html {
    button), because they stand inside the padded zone. A negative margin of the same size cancels
    it for them. */
 .toolbar-actions *,
-.project-links * {
+.page-actions * {
   scroll-margin-top: calc(-1 * var(--pinned-clearance));
 }
 
@@ -32,7 +32,7 @@ html {
    and the cards. See docs/conventions.md for what sits where at each screen size. */
 :root {
   --toolbar-bar-height: 3.75rem;
-  --project-link-size: 2.25rem;
+  --page-action-size: 2.25rem;
   --pinned-clearance: 4.5rem;
 }
 
@@ -82,20 +82,22 @@ html {
   }
 }
 
-/* On a phone the links have a row of their own above the title. From 768px they are pinned: the
-   element takes no height, so the title is not pushed down, and it sticks at the top of the screen
-   on the same line as the pinned add and sort buttons. */
-.project-links {
+/* On a phone the theme toggle and the links have a row of their own above the title. From 768px
+   they are pinned: the element takes no height, so the title is not pushed down, and it sticks at
+   the top of the screen on the same line as the pinned add and sort buttons. Its items keep their
+   own height (flex-start), or they would be squashed to the element's zero height. */
+.page-actions {
   display: flex;
+  align-items: flex-start;
   justify-content: flex-end;
   gap: var(--mantine-spacing-xs);
   margin-bottom: var(--mantine-spacing-xs);
 }
 
 @media (min-width: 48em) {
-  .project-links {
+  .page-actions {
     position: sticky;
-    top: calc((var(--toolbar-bar-height) - var(--project-link-size)) / 2);
+    top: calc((var(--toolbar-bar-height) - var(--page-action-size)) / 2);
     z-index: 13;
     height: 0;
     margin-bottom: 0;
