@@ -10,7 +10,8 @@ import { preview } from 'vite'
 // on an error thrown by the page, and on a run that could not finish. Prints axe's "incomplete"
 // results as notes, because those need a human look. One more run asks Chrome for reduced motion
 // and fails if anything still has a transition or animation. A last run checks that focusing a
-// pinned control does not scroll the page. Run it with `npm run a11y`.
+// pinned control does not scroll the page, and one that locking the deals switch (an offer gets
+// a second pizza) moves nothing. Run it with `npm run a11y`.
 
 const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice']
 const WIDTHS = [375, 768, 1280]
@@ -61,10 +62,10 @@ function write(text: string): void {
   process.stdout.write(`${text}\n`)
 }
 
-// The busy page shows every rank color, the bundle controls and the locked checkbox note, and
+// The busy page shows every rank color, the bundle controls and the locked deals switch, and
 // has a status message in the live region.
 async function makeBusy(page: Page): Promise<void> {
-  await page.getByRole('checkbox', { name: 'Multi-pizza deals' }).check()
+  await page.getByRole('switch', { name: 'Multi-pizza deals' }).check()
   await page.getByRole('button', { name: 'Add pizza' }).first().click()
   for (let i = 0; i < 2; i++) await page.getByRole('button', { name: 'Add offer' }).click()
   const prices = page.getByRole('textbox', { name: /Price/ })
@@ -210,6 +211,49 @@ async function scanFocusScroll(browser: Browser, url: string): Promise<Scan> {
   return { failures, notes: [] }
 }
 
+// While an offer has several pizzas the deals switch is locked on and says so. That must not change
+// the height of anything: a helper line under it once moved every card by 20px on a phone. The
+// buttons, the switch and the first card are measured before and after.
+async function scanLockShift(browser: Browser, url: string): Promise<Scan> {
+  const failures: string[] = []
+  for (const width of WIDTHS) {
+    const where = `lock shift, ${width}px`
+    const context = await browser.newContext({ viewport: { width, height: 900 } })
+    try {
+      const page = await context.newPage()
+      await page.goto(url)
+      await page.waitForSelector('h1')
+      const measure = async (): Promise<Record<string, number>> => {
+        const top = async (selector: string): Promise<number> =>
+          ((await page.locator(selector).first().boundingBox())?.y ?? Number.NaN) as number
+        return {
+          'Add offer': await top('.toolbar-actions button:has-text("Add offer")'),
+          'deals switch': await top('.toolbar-deals'),
+          'first card': await top('.offers input'),
+        }
+      }
+      const before = await measure()
+      await page.getByRole('switch', { name: 'Multi-pizza deals' }).check({ force: true })
+      await page.getByRole('button', { name: 'Add pizza' }).first().click()
+      await page.evaluate('document.activeElement?.blur(); window.scrollTo(0, 0)')
+      const after = await measure()
+      for (const [name, y] of Object.entries(before)) {
+        if (Number.isNaN(y) || Math.abs(after[name] - y) > 1) {
+          failures.push(
+            `[lock shift] ${where}: the ${name} moved from y${Math.round(y)} to y${Math.round(after[name])} when the deals switch locked`,
+          )
+        }
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message.split('\n')[0] : String(error)
+      failures.push(`[run failed] ${where}\n    ${message}`)
+    } finally {
+      await context.close()
+    }
+  }
+  return { failures, notes: [] }
+}
+
 async function main(): Promise<void> {
   const axeSource = await readFile(
     createRequire(import.meta.url).resolve('axe-core/axe.min.js'),
@@ -240,6 +284,9 @@ async function main(): Promise<void> {
     const focus = await scanFocusScroll(browser, url)
     failures.push(...focus.failures)
     runs += PINNED_CONTROLS.length
+    const lock = await scanLockShift(browser, url)
+    failures.push(...lock.failures)
+    runs += WIDTHS.length
   } finally {
     await browser.close()
     await server.close()
@@ -253,7 +300,7 @@ async function main(): Promise<void> {
     return
   }
   write(
-    `No problems in ${runs} runs: axe at ${WIDTHS.join(', ')} px in light and dark, nothing moves with reduced motion, and focusing a pinned control does not scroll the page.`,
+    `No problems in ${runs} runs: axe at ${WIDTHS.join(', ')} px in light and dark, nothing moves with reduced motion, focusing a pinned control does not scroll the page, and locking the deals switch moves nothing.`,
   )
 }
 
