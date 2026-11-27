@@ -5,11 +5,14 @@ import { ResetIcon } from './ResetIcon'
 
 interface Props {
   onConfirm: () => void
+  // The label is hidden, so the icon gets a tooltip. With the label showing, a tooltip would only
+  // repeat it.
+  iconOnly?: boolean
 }
 
 // Asks first, because the comparison is remembered and this replaces it. On a phone the label is
 // hidden by Toolbar.css to make room, so the name is set here and does not depend on it.
-export function ResetButton({ onConfirm }: Readonly<Props>): ReactElement {
+export function ResetButton({ onConfirm, iconOnly = false }: Readonly<Props>): ReactElement {
   const [opened, { open, close }] = useDisclosure(false)
 
   function confirm(): void {
@@ -24,7 +27,7 @@ export function ResetButton({ onConfirm }: Readonly<Props>): ReactElement {
         leftSection={<ResetIcon />}
         onClick={open}
         aria-label="Reset"
-        title="Reset"
+        title={iconOnly ? 'Reset' : undefined}
         classNames={{ root: 'toolbar-icon-only', section: 'toolbar-button-icon' }}
       >
         <span className="toolbar-button-label">Reset</span>

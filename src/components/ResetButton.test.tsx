@@ -51,4 +51,15 @@ describe('ResetButton', () => {
     expect(onConfirm).not.toHaveBeenCalled()
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
   })
+
+  it('is named "Reset" without repeating it as a tooltip when its text is showing', () => {
+    renderWithMantine(<ResetButton onConfirm={vi.fn()} />)
+    const button = screen.getByRole('button', { name: 'Reset' })
+    expect(button.getAttribute('title')).toBeNull()
+  })
+
+  it('shows its name as a tooltip when only the icon is showing', () => {
+    renderWithMantine(<ResetButton onConfirm={vi.fn()} iconOnly />)
+    expect(screen.getByRole('button', { name: 'Reset' }).getAttribute('title')).toBe('Reset')
+  })
 })

@@ -106,7 +106,8 @@
     flex: 0 0 360px;
   }
 
-  .toolbar-settings > .toolbar-select:last-child {
+  /* The second select, not the last child: Reset follows it in the row. */
+  .toolbar-settings > .toolbar-select + .toolbar-select {
     flex: 0 0 180px;
   }
 

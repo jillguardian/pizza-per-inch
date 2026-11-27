@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi, type Mock } from 'vitest'
 import { Toolbar } from './Toolbar'
 import { renderWithMantine } from '../test/render'
+import { PHONE_QUERY } from './breakpoints'
 
 interface ToolbarHandlers {
   onCurrencyChange: Mock
@@ -35,6 +36,14 @@ function renderToolbar(overrides: Partial<Parameters<typeof Toolbar>[0]> = {}): 
   return handlers
 }
 
+// The stylesheet as text (a plain `?raw` import of a .css file comes back empty in Vitest).
+const toolbarCss = Object.values(
+  import.meta.glob('./Toolbar.css', { query: '?raw', import: 'default', eager: true }) as Record<
+    string,
+    string
+  >,
+)[0]
+
 describe('Toolbar', () => {
   it('asks to add an offer', async () => {
     const { onAddOffer } = renderToolbar()
@@ -57,6 +66,17 @@ describe('Toolbar', () => {
     await userEvent.click(within(dialog).getByRole('button', { name: 'Reset' }))
 
     expect(onReset).toHaveBeenCalledOnce()
+  })
+
+  it('does not repeat the visible button names as tooltips', () => {
+    renderToolbar()
+    expect(screen.getByRole('button', { name: 'Sort by value' }).getAttribute('title')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Reset' }).getAttribute('title')).toBeNull()
+  })
+
+  it('stays in step with the breakpoint in Toolbar.css, where the labels are hidden on a phone', () => {
+    expect(toolbarCss.length).toBeGreaterThan(0)
+    expect(toolbarCss).toContain(`@media ${PHONE_QUERY}`)
   })
 
   it('has one Reset button, so there is never a second one hidden in the page', () => {
@@ -137,6 +157,10 @@ describe('Toolbar', () => {
       renderToolbar()
 
       expect(screen.getAllByRole('button', { name: 'Reset' })).toHaveLength(1)
+      expect(screen.getByRole('button', { name: 'Sort by value' }).getAttribute('title')).toBe(
+        'Sort by value',
+      )
+      expect(screen.getByRole('button', { name: 'Reset' }).getAttribute('title')).toBe('Reset')
       const order = [
         screen.getByRole('combobox', { name: 'Currency' }),
         screen.getByRole('combobox', { name: 'Show price per' }),

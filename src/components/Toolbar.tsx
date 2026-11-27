@@ -3,6 +3,7 @@ import { useMediaQuery } from '@mantine/hooks'
 import type { ReactElement } from 'react'
 import { listCurrencies, type Currency } from '../lib/currencies'
 import type { SizeUnit } from '../lib/pizza'
+import { PHONE_QUERY } from './breakpoints'
 import { ADD_OFFER_ID } from './focusIds'
 import { PlusIcon } from './PlusIcon'
 import { ResetButton } from './ResetButton'
@@ -33,11 +34,9 @@ const CURRENCY_OPTIONS = [
   { group: 'All currencies', items: toOptions(CURRENCIES.other) },
 ]
 
-// Below this width (48em, the same breakpoint as Toolbar.css) Reset joins the pinned buttons.
-// Everywhere else it sits at the right end of the settings row. It is rendered in one place only,
-// so there is never a second Reset button hidden in the page.
-const PHONE = '(max-width: 47.99em)'
-
+// Reset joins the pinned buttons on a phone, and sits at the right end of the settings row
+// elsewhere. It is rendered in one place only, so there is never a second Reset button hidden in
+// the page.
 const PRICE_UNIT_OPTIONS = [
   { value: 'in', label: 'Square inch' },
   { value: 'cm', label: 'Square cm' },
@@ -55,7 +54,7 @@ export function Toolbar({
   onReset,
   onBundlesChange,
 }: Readonly<ToolbarProps>): ReactElement {
-  const phone = useMediaQuery(PHONE, false, { getInitialValueInEffect: false })
+  const phone = useMediaQuery(PHONE_QUERY, false, { getInitialValueInEffect: false })
   return (
     <>
       <div className="toolbar-settings">
@@ -75,7 +74,7 @@ export function Toolbar({
         />
         {!phone && (
           <div className="toolbar-reset">
-            <ResetButton onConfirm={onReset} />
+            <ResetButton onConfirm={onReset} iconOnly={phone} />
           </div>
         )}
       </div>
@@ -89,14 +88,14 @@ export function Toolbar({
           leftSection={<SortIcon />}
           onClick={onSortOffers}
           aria-label="Sort by value"
-          title="Sort by value"
+          title={phone ? 'Sort by value' : undefined}
           classNames={{ root: 'toolbar-icon-only', section: 'toolbar-button-icon' }}
         >
           <span className="toolbar-button-label">Sort by value</span>
         </Button>
         {phone && (
           <div className="toolbar-reset">
-            <ResetButton onConfirm={onReset} />
+            <ResetButton onConfirm={onReset} iconOnly={phone} />
           </div>
         )}
       </div>
