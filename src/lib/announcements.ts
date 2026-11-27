@@ -33,3 +33,7 @@ export function bestValue(names: string[]): string {
     ? `${list} is now the best value.`
     : `${list} are now tied for the best value.`
 }
+
+export function comparisonReset(offers: number): string {
+  return `Comparison reset to ${countOf(offers, 'example offer')}.`
+}

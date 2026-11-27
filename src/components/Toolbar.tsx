@@ -1,8 +1,12 @@
 import { Button, Checkbox, NativeSelect } from '@mantine/core'
+import { useMediaQuery } from '@mantine/hooks'
 import type { ReactElement } from 'react'
 import { listCurrencies, type Currency } from '../lib/currencies'
 import type { SizeUnit } from '../lib/pizza'
 import { ADD_OFFER_ID } from './focusIds'
+import { PlusIcon } from './PlusIcon'
+import { ResetButton } from './ResetButton'
+import { SortIcon } from './SortIcon'
 import './Toolbar.css'
 
 const CURRENCIES = listCurrencies()
@@ -16,6 +20,7 @@ interface ToolbarProps {
   bundlesLocked: boolean
   onAddOffer: () => void
   onSortOffers: () => void
+  onReset: () => void
   onBundlesChange: (enabled: boolean) => void
 }
 
@@ -27,6 +32,11 @@ const CURRENCY_OPTIONS = [
   { group: 'Common', items: toOptions(CURRENCIES.common) },
   { group: 'All currencies', items: toOptions(CURRENCIES.other) },
 ]
+
+// Below this width (48em, the same breakpoint as Toolbar.css) Reset joins the pinned buttons.
+// Everywhere else it sits at the right end of the settings row. It is rendered in one place only,
+// so there is never a second Reset button hidden in the page.
+const PHONE = '(max-width: 47.99em)'
 
 const PRICE_UNIT_OPTIONS = [
   { value: 'in', label: 'Square inch' },
@@ -42,8 +52,10 @@ export function Toolbar({
   bundlesLocked,
   onAddOffer,
   onSortOffers,
+  onReset,
   onBundlesChange,
 }: Readonly<ToolbarProps>): ReactElement {
+  const phone = useMediaQuery(PHONE, false, { getInitialValueInEffect: false })
   return (
     <>
       <div className="toolbar-settings">
@@ -61,15 +73,32 @@ export function Toolbar({
           value={priceUnit}
           onChange={(event) => onPriceUnitChange(event.currentTarget.value as SizeUnit)}
         />
+        {!phone && (
+          <div className="toolbar-reset">
+            <ResetButton onConfirm={onReset} />
+          </div>
+        )}
       </div>
       <div className="toolbar-strip" aria-hidden="true" />
       <div className="toolbar-actions">
-        <Button id={ADD_OFFER_ID} onClick={onAddOffer}>
-          + Add offer
+        <Button id={ADD_OFFER_ID} leftSection={<PlusIcon />} onClick={onAddOffer}>
+          Add offer
         </Button>
-        <Button variant="default" onClick={onSortOffers}>
-          Sort by value
+        <Button
+          variant="default"
+          leftSection={<SortIcon />}
+          onClick={onSortOffers}
+          aria-label="Sort by value"
+          title="Sort by value"
+          classNames={{ root: 'toolbar-icon-only', section: 'toolbar-button-icon' }}
+        >
+          <span className="toolbar-button-label">Sort by value</span>
         </Button>
+        {phone && (
+          <div className="toolbar-reset">
+            <ResetButton onConfirm={onReset} />
+          </div>
+        )}
       </div>
       <Checkbox
         className="toolbar-checkbox"

@@ -7,6 +7,7 @@ import {
   pizzaAdded,
   pizzaRemoved,
   sortedByValue,
+  comparisonReset,
 } from './announcements'
 
 describe('announcements', () => {
@@ -45,5 +46,10 @@ describe('announcements', () => {
   it('calls an offer with no name by a spoken name', () => {
     expect(offerRemoved('  ', 1)).toBe('Unnamed offer removed. 1 offer left.')
     expect(sortedByValue(['', 'Large'])).toBe('Sorted by value, best first: Unnamed offer, Large.')
+  })
+
+  it('says how many example offers a reset leaves', () => {
+    expect(comparisonReset(2)).toBe('Comparison reset to 2 example offers.')
+    expect(comparisonReset(1)).toBe('Comparison reset to 1 example offer.')
   })
 })

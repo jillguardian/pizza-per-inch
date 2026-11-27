@@ -13,16 +13,23 @@ interface UseOffers {
   removePizza: (offerId: number, pizzaId: number) => void
   removeOffer: (id: number) => void
   sortOffers: () => void
+  resetOffers: () => void
 }
 
 // Ids carry on from the highest one given, so an offer or pizza added later never reuses one. The
 // list may be empty, so the highest id starts from 0.
+function nextOfferId(offers: Offer[]): number {
+  return Math.max(0, ...offers.map((offer) => offer.id)) + 1
+}
+
+function nextPizzaIdFor(offers: Offer[]): number {
+  return Math.max(0, ...offers.flatMap((offer) => offer.pizzas.map((pizza) => pizza.id))) + 1
+}
+
 export function useOffers(initialOffers: Offer[] = INITIAL_OFFERS): UseOffers {
   const [offers, setOffers] = useState<Offer[]>(initialOffers)
-  const nextId = useRef(Math.max(0, ...initialOffers.map((offer) => offer.id)) + 1)
-  const nextPizzaId = useRef(
-    Math.max(0, ...initialOffers.flatMap((offer) => offer.pizzas.map((pizza) => pizza.id))) + 1,
-  )
+  const nextId = useRef(nextOfferId(initialOffers))
+  const nextPizzaId = useRef(nextPizzaIdFor(initialOffers))
 
   function addOffer(): void {
     const offer = createOffer(nextId.current)
@@ -77,6 +84,13 @@ export function useOffers(initialOffers: Offer[] = INITIAL_OFFERS): UseOffers {
     setOffers(sortByRank)
   }
 
+  // Back to the examples, with the ids counting from there again, so the next offer is "Offer 3".
+  function resetOffers(): void {
+    setOffers(INITIAL_OFFERS)
+    nextId.current = nextOfferId(INITIAL_OFFERS)
+    nextPizzaId.current = nextPizzaIdFor(INITIAL_OFFERS)
+  }
+
   return {
     offers,
     addOffer,
@@ -86,5 +100,6 @@ export function useOffers(initialOffers: Offer[] = INITIAL_OFFERS): UseOffers {
     removePizza,
     removeOffer,
     sortOffers,
+    resetOffers,
   }
 }

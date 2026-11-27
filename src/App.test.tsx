@@ -2,6 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import App from './App'
+import { detectLocaleCurrency } from './lib/currencies'
 import { renderWithMantine } from './test/render'
 
 describe('App', () => {
@@ -20,7 +21,7 @@ describe('App', () => {
   it('adds and removes offers', async () => {
     renderWithMantine(<App />)
 
-    await userEvent.click(screen.getByRole('button', { name: '+ Add offer' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Add offer' }))
     expect(screen.getAllByLabelText('Name')).toHaveLength(3)
 
     await userEvent.click(screen.getAllByRole('button', { name: 'Remove offer' })[0])
@@ -189,7 +190,7 @@ describe('App', () => {
 
       await userEvent.click(screen.getByRole('button', { name: 'Remove offer' }))
 
-      expect(document.activeElement).toBe(screen.getByRole('button', { name: '+ Add offer' }))
+      expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Add offer' }))
     })
   })
 
@@ -203,7 +204,7 @@ describe('App', () => {
 
     it('announces an added offer', async () => {
       renderWithMantine(<App />)
-      await userEvent.click(screen.getByRole('button', { name: '+ Add offer' }))
+      await userEvent.click(screen.getByRole('button', { name: 'Add offer' }))
       expect(status()).toBe('Offer added. 3 offers.')
     })
 
@@ -293,14 +294,14 @@ describe('App', () => {
       localStorage.setItem(KEY, savedText)
       renderWithMantine(<App />)
 
-      await userEvent.click(screen.getByRole('button', { name: '+ Add offer' }))
+      await userEvent.click(screen.getByRole('button', { name: 'Add offer' }))
 
       expect((screen.getAllByLabelText('Name')[1] as HTMLInputElement).value).toBe('Offer 5')
     })
 
     it('saves what is changed, so a reload gets it back', async () => {
       const first = renderWithMantine(<App />)
-      await userEvent.click(screen.getByRole('button', { name: '+ Add offer' }))
+      await userEvent.click(screen.getByRole('button', { name: 'Add offer' }))
       await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Currency' }), 'GBP')
       first.unmount()
 
@@ -322,6 +323,49 @@ describe('App', () => {
       expect((screen.getAllByLabelText('Name')[0] as HTMLInputElement).value).toBe('Corner shop')
     })
 
+    it('resets: the examples, the default currency and unit, and the saved copy follows', async () => {
+      const first = renderWithMantine(<App />)
+      await userEvent.click(screen.getByRole('button', { name: 'Add offer' }))
+      await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Currency' }), 'GBP')
+      await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Show price per' }), 'cm')
+      await userEvent.click(screen.getByRole('checkbox', { name: 'Multi-pizza deals' }))
+      expect(screen.getAllByLabelText('Name')).toHaveLength(3)
+
+      await userEvent.click(screen.getByRole('button', { name: 'Reset' }))
+      const dialog = await screen.findByRole('dialog', { name: 'Reset the comparison?' })
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Reset' }))
+
+      await waitFor(() => expect(screen.getAllByLabelText('Name')).toHaveLength(2))
+      expect((screen.getAllByLabelText('Name')[0] as HTMLInputElement).value).toBe('Small')
+      expect(
+        (screen.getByRole('combobox', { name: 'Show price per' }) as HTMLSelectElement).value,
+      ).toBe('in')
+      expect((screen.getByRole('combobox', { name: 'Currency' }) as HTMLSelectElement).value).toBe(
+        detectLocaleCurrency() ?? 'USD',
+      )
+      expect(screen.getByRole('checkbox', { name: 'Multi-pizza deals' })).toHaveProperty(
+        'checked',
+        false,
+      )
+      expect(screen.getByRole('status').textContent).toBe('Comparison reset to 2 example offers.')
+
+      first.unmount()
+      renderWithMantine(<App />)
+      expect(screen.getAllByLabelText('Name')).toHaveLength(2)
+    })
+
+    it('keeps the comparison when the reset is cancelled', async () => {
+      renderWithMantine(<App />)
+      await userEvent.click(screen.getByRole('button', { name: 'Add offer' }))
+
+      await userEvent.click(screen.getByRole('button', { name: 'Reset' }))
+      const dialog = await screen.findByRole('dialog')
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))
+
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+      expect(screen.getAllByLabelText('Name')).toHaveLength(3)
+    })
+
     it('starts with the example offers when the saved data is damaged', () => {
       localStorage.setItem(KEY, '{"version": 1, "offers": "oops"')
       renderWithMantine(<App />)
@@ -339,7 +383,7 @@ describe('App', () => {
       renderWithMantine(<App />)
 
       expect(screen.getAllByLabelText('Name')).toHaveLength(2)
-      await userEvent.click(screen.getByRole('button', { name: '+ Add offer' }))
+      await userEvent.click(screen.getByRole('button', { name: 'Add offer' }))
       expect(screen.getAllByLabelText('Name')).toHaveLength(3)
       vi.restoreAllMocks()
     })

@@ -14,6 +14,29 @@
   min-width: 0;
 }
 
+/* Reset is pulled to the right. On a phone it is among the pinned buttons, and elsewhere at the end
+   of the settings row. */
+.toolbar-reset {
+  margin-left: auto;
+}
+
+/* On a phone the secondary buttons show only their icon, to fit three buttons on one line. Their
+   names stay (aria-label), and the icon has no gap to fill. */
+@media (max-width: 47.99em) {
+  .toolbar-icon-only {
+    width: 2.25rem;
+    padding: 0;
+  }
+
+  .toolbar-icon-only .toolbar-button-label {
+    display: none;
+  }
+
+  .toolbar-icon-only .toolbar-button-icon {
+    margin: 0;
+  }
+}
+
 /* The buttons are used while scrolling through the cards, so they stay pinned. A sticky item only
    sticks inside its grid area, so they span the rows below them. */
 .toolbar-actions,
@@ -57,6 +80,10 @@
 }
 
 @media (min-width: 48em) {
+  .toolbar-settings {
+    grid-template-columns: 1fr 1fr auto;
+  }
+
   .toolbar-actions {
     justify-self: start;
   }

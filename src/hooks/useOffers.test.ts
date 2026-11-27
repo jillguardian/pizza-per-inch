@@ -141,4 +141,37 @@ describe('useOffers', () => {
       expect(result.current.offers.map((o) => o.id)).toEqual([1])
     })
   })
+
+  describe('starting over', () => {
+    it('goes back to the example offers', () => {
+      const { result } = renderHook(() => useOffers())
+      act(() => result.current.addOffer())
+      act(() => result.current.removeOffer(1))
+      act(() => result.current.updateOffer(2, { name: 'Changed', price: 99 }))
+
+      act(() => result.current.resetOffers())
+
+      expect(result.current.offers).toEqual(INITIAL_OFFERS)
+    })
+
+    it('counts the ids from the examples again, so the next offer is named after them', () => {
+      const { result } = renderHook(() => useOffers())
+      for (let i = 0; i < 4; i++) act(() => result.current.addOffer())
+
+      act(() => result.current.resetOffers())
+      act(() => result.current.addOffer())
+
+      expect(result.current.offers.map((o) => o.id)).toEqual([1, 2, 3])
+      expect(result.current.offers[2].name).toBe('Offer 3')
+    })
+
+    it('replaces saved offers too', () => {
+      const saved = [{ id: 9, name: 'Saved', notes: '', price: 5, pizzas: [createPizza(4)] }]
+      const { result } = renderHook(() => useOffers(saved))
+
+      act(() => result.current.resetOffers())
+
+      expect(result.current.offers).toEqual(INITIAL_OFFERS)
+    })
+  })
 })

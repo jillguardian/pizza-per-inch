@@ -11,6 +11,7 @@ import { useAnnouncer } from './hooks/useAnnouncer'
 import { useBestValueAnnouncement } from './hooks/useBestValueAnnouncement'
 import { useOffers } from './hooks/useOffers'
 import {
+  comparisonReset,
   NOTHING_TO_SORT,
   offerAdded,
   offerRemoved,
@@ -19,7 +20,7 @@ import {
   sortedByValue,
 } from './lib/announcements'
 import { detectLocaleCurrency, isSupportedCurrency } from './lib/currencies'
-import { isBundle, rankOffers, sortByRank, type Offer } from './lib/offer'
+import { INITIAL_OFFERS, isBundle, rankOffers, sortByRank, type Offer } from './lib/offer'
 import { outline, type SizeUnit } from './lib/pizza'
 import { loadSaved, saveComparison } from './lib/savedStorage'
 
@@ -36,6 +37,7 @@ export default function App(): ReactElement {
     removePizza,
     removeOffer,
     sortOffers,
+    resetOffers,
   } = useOffers(saved?.offers)
   const [currency, setCurrency] = useState(saved?.currency ?? DEFAULT_CURRENCY)
   const [priceUnit, setPriceUnit] = useState<SizeUnit>(saved?.priceUnit ?? 'in')
@@ -72,6 +74,14 @@ export default function App(): ReactElement {
         : sortedByValue(sortByRank(offers).map((offer) => offer.name)),
     )
     sortOffers()
+  }
+
+  function handleReset(): void {
+    resetOffers()
+    setCurrency(DEFAULT_CURRENCY)
+    setPriceUnit('in')
+    setBundlesChosen(false)
+    announce(comparisonReset(INITIAL_OFFERS.length))
   }
 
   function handleAddPizza(offer: Offer): void {
@@ -131,6 +141,7 @@ export default function App(): ReactElement {
           bundlesLocked={bundlesLocked}
           onAddOffer={handleAddOffer}
           onSortOffers={handleSortOffers}
+          onReset={handleReset}
           onBundlesChange={setBundlesChosen}
         />
 
