@@ -2,7 +2,6 @@ import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import App from './App'
-import { detectLocaleCurrency } from './lib/currencies'
 import { renderWithMantine } from './test/render'
 
 describe('App', () => {
@@ -26,6 +25,16 @@ describe('App', () => {
 
     await userEvent.click(screen.getAllByRole('button', { name: 'Remove offer' })[0])
     expect(screen.getAllByLabelText('Name')).toHaveLength(2)
+  })
+
+  it('says what to do when the last offer is removed', async () => {
+    renderWithMantine(<App />)
+
+    await userEvent.click(screen.getAllByRole('button', { name: 'Remove offer' })[0])
+    await userEvent.click(screen.getAllByRole('button', { name: 'Remove offer' })[0])
+
+    expect(screen.queryAllByLabelText('Name')).toHaveLength(0)
+    expect(screen.getByText('No offers yet. Add an offer to compare prices.')).toBeTruthy()
   })
 
   it('applies the chosen currency to every offer', async () => {
@@ -274,6 +283,20 @@ describe('App', () => {
       bundlesChosen: true,
     })
 
+    // The currency, price unit and deals setting are preferences, so clearing the offers leaves them alone.
+    function expectSettingsKept(): void {
+      expect((screen.getByRole('combobox', { name: 'Currency' }) as HTMLSelectElement).value).toBe(
+        'GBP',
+      )
+      expect(
+        (screen.getByRole('combobox', { name: 'Show price per' }) as HTMLSelectElement).value,
+      ).toBe('cm')
+      expect(screen.getByRole('checkbox', { name: 'Multi-pizza deals' })).toHaveProperty(
+        'checked',
+        true,
+      )
+    }
+
     it('starts from the saved comparison', () => {
       localStorage.setItem(KEY, savedText)
       renderWithMantine(<App />)
@@ -323,42 +346,54 @@ describe('App', () => {
       expect((screen.getAllByLabelText('Name')[0] as HTMLInputElement).value).toBe('Corner shop')
     })
 
-    it('resets: the examples, the default currency and unit, and the saved copy follows', async () => {
+    it('clears every offer, keeps the settings, says so, and the saved copy follows', async () => {
       const first = renderWithMantine(<App />)
       await userEvent.click(screen.getByRole('button', { name: 'Add offer' }))
       await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Currency' }), 'GBP')
       await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Show price per' }), 'cm')
       await userEvent.click(screen.getByRole('checkbox', { name: 'Multi-pizza deals' }))
       expect(screen.getAllByLabelText('Name')).toHaveLength(3)
+      expect(screen.queryByText(/No offers yet/)).toBeNull()
 
-      await userEvent.click(screen.getByRole('button', { name: 'Reset' }))
-      const dialog = await screen.findByRole('dialog', { name: 'Reset the comparison?' })
-      await userEvent.click(within(dialog).getByRole('button', { name: 'Reset' }))
+      await userEvent.click(screen.getByRole('button', { name: 'Clear' }))
+      const dialog = await screen.findByRole('dialog', { name: 'Clear all 3 offers?' })
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Clear' }))
 
-      await waitFor(() => expect(screen.getAllByLabelText('Name')).toHaveLength(2))
-      expect((screen.getAllByLabelText('Name')[0] as HTMLInputElement).value).toBe('Small')
-      expect(
-        (screen.getByRole('combobox', { name: 'Show price per' }) as HTMLSelectElement).value,
-      ).toBe('in')
-      expect((screen.getByRole('combobox', { name: 'Currency' }) as HTMLSelectElement).value).toBe(
-        detectLocaleCurrency() ?? 'USD',
+      await waitFor(() => expect(screen.queryAllByLabelText('Name')).toHaveLength(0))
+      expect(screen.getByText('No offers yet. Add an offer to compare prices.')).toBeTruthy()
+      expect(screen.getByRole('status').textContent).toBe(
+        'All offers cleared. Add an offer to start comparing.',
       )
-      expect(screen.getByRole('checkbox', { name: 'Multi-pizza deals' })).toHaveProperty(
-        'checked',
-        false,
-      )
-      expect(screen.getByRole('status').textContent).toBe('Comparison reset to 2 example offers.')
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+      expect(screen.getByRole('button', { name: 'Clear' })).toHaveProperty('disabled', true)
+      expectSettingsKept()
 
       first.unmount()
       renderWithMantine(<App />)
-      expect(screen.getAllByLabelText('Name')).toHaveLength(2)
+      expect(screen.queryAllByLabelText('Name')).toHaveLength(0)
+      expect(screen.getByText('No offers yet. Add an offer to compare prices.')).toBeTruthy()
+      expectSettingsKept()
     })
 
-    it('keeps the comparison when the reset is cancelled', async () => {
+    it('starts again from "Offer 1" after clearing', async () => {
+      renderWithMantine(<App />)
+      await userEvent.click(screen.getByRole('button', { name: 'Clear' }))
+      await userEvent.click(
+        within(await screen.findByRole('dialog')).getByRole('button', { name: 'Clear' }),
+      )
+      await waitFor(() => expect(screen.queryAllByLabelText('Name')).toHaveLength(0))
+
+      await userEvent.click(screen.getByRole('button', { name: 'Add offer' }))
+
+      expect((screen.getByLabelText('Name') as HTMLInputElement).value).toBe('Offer 1')
+      expect(screen.queryByText(/No offers yet/)).toBeNull()
+    })
+
+    it('keeps the offers when clearing is cancelled', async () => {
       renderWithMantine(<App />)
       await userEvent.click(screen.getByRole('button', { name: 'Add offer' }))
 
-      await userEvent.click(screen.getByRole('button', { name: 'Reset' }))
+      await userEvent.click(screen.getByRole('button', { name: 'Clear' }))
       const dialog = await screen.findByRole('dialog')
       await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))
 

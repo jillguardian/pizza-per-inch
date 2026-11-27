@@ -109,7 +109,7 @@ html {
   }
 
   /* A page-coloured background as tall as the pinned bar, so what scrolls beneath the pinned group
-     (the Reset button, a card) is hidden behind it, as it is behind the pinned buttons. It sits
+     (the Clear button, a card) is hidden behind it, as it is behind the pinned buttons. It sits
      behind the group's own controls, and at the top of the page it is invisible. */
   .page-actions-group::before {
     content: '';
@@ -121,4 +121,8 @@ html {
     height: var(--toolbar-bar-height);
     background: var(--mantine-color-body);
   }
+}
+
+.offers-empty {
+  grid-column: 1 / -1;
 }

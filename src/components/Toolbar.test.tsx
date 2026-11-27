@@ -10,7 +10,7 @@ interface ToolbarHandlers {
   onPriceUnitChange: Mock
   onAddOffer: Mock
   onSortOffers: Mock
-  onReset: Mock
+  onClear: Mock
   onBundlesChange: Mock
 }
 
@@ -20,7 +20,7 @@ function renderToolbar(overrides: Partial<Parameters<typeof Toolbar>[0]> = {}): 
     onPriceUnitChange: vi.fn(),
     onAddOffer: vi.fn(),
     onSortOffers: vi.fn(),
-    onReset: vi.fn(),
+    onClear: vi.fn(),
     onBundlesChange: vi.fn(),
   }
   renderWithMantine(
@@ -29,6 +29,7 @@ function renderToolbar(overrides: Partial<Parameters<typeof Toolbar>[0]> = {}): 
       priceUnit="in"
       showBundles={false}
       bundlesLocked={false}
+      offerCount={2}
       {...handlers}
       {...overrides}
     />,
@@ -57,21 +58,21 @@ describe('Toolbar', () => {
     expect(onSortOffers).toHaveBeenCalledOnce()
   })
 
-  it('resets only after the dialog is confirmed', async () => {
-    const { onReset } = renderToolbar()
+  it('clears only after the dialog is confirmed', async () => {
+    const { onClear } = renderToolbar()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Reset' }))
-    expect(onReset).not.toHaveBeenCalled()
-    const dialog = await screen.findByRole('dialog', { name: 'Reset the comparison?' })
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Reset' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Clear' }))
+    expect(onClear).not.toHaveBeenCalled()
+    const dialog = await screen.findByRole('dialog', { name: 'Clear all 2 offers?' })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Clear' }))
 
-    expect(onReset).toHaveBeenCalledOnce()
+    expect(onClear).toHaveBeenCalledOnce()
   })
 
   it('does not repeat the visible button names as tooltips', () => {
     renderToolbar()
     expect(screen.getByRole('button', { name: 'Sort by value' }).getAttribute('title')).toBeNull()
-    expect(screen.getByRole('button', { name: 'Reset' }).getAttribute('title')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Clear' }).getAttribute('title')).toBeNull()
   })
 
   it('stays in step with the breakpoint in Toolbar.css, where the labels are hidden on a phone', () => {
@@ -79,9 +80,9 @@ describe('Toolbar', () => {
     expect(toolbarCss).toContain(`@media ${PHONE_QUERY}`)
   })
 
-  it('has one Reset button, so there is never a second one hidden in the page', () => {
+  it('has one Clear button, so there is never a second one hidden in the page', () => {
     renderToolbar()
-    expect(screen.getAllByRole('button', { name: 'Reset' })).toHaveLength(1)
+    expect(screen.getAllByRole('button', { name: 'Clear' })).toHaveLength(1)
   })
 
   it('reports a newly selected currency', async () => {
@@ -128,7 +129,7 @@ describe('Toolbar', () => {
     const order = [
       screen.getByRole('combobox', { name: 'Currency' }),
       screen.getByRole('combobox', { name: 'Show price per' }),
-      screen.getByRole('button', { name: 'Reset' }),
+      screen.getByRole('button', { name: 'Clear' }),
       screen.getByRole('button', { name: 'Add offer' }),
       screen.getByRole('button', { name: 'Sort by value' }),
       screen.getByRole('checkbox', { name: 'Multi-pizza deals' }),
@@ -147,7 +148,7 @@ describe('Toolbar', () => {
       window.matchMedia = realMatchMedia
     })
 
-    it('puts Reset among the pinned buttons, after Sort by value, and still has only one', async () => {
+    it('puts Clear among the pinned buttons, after Sort by value, and still has only one', async () => {
       window.matchMedia = ((query: string) => ({
         matches: query.includes('max-width'),
         media: query,
@@ -156,17 +157,17 @@ describe('Toolbar', () => {
       })) as unknown as typeof window.matchMedia
       renderToolbar()
 
-      expect(screen.getAllByRole('button', { name: 'Reset' })).toHaveLength(1)
+      expect(screen.getAllByRole('button', { name: 'Clear' })).toHaveLength(1)
       expect(screen.getByRole('button', { name: 'Sort by value' }).getAttribute('title')).toBe(
         'Sort by value',
       )
-      expect(screen.getByRole('button', { name: 'Reset' }).getAttribute('title')).toBe('Reset')
+      expect(screen.getByRole('button', { name: 'Clear' }).getAttribute('title')).toBe('Clear')
       const order = [
         screen.getByRole('combobox', { name: 'Currency' }),
         screen.getByRole('combobox', { name: 'Show price per' }),
         screen.getByRole('button', { name: 'Add offer' }),
         screen.getByRole('button', { name: 'Sort by value' }),
-        screen.getByRole('button', { name: 'Reset' }),
+        screen.getByRole('button', { name: 'Clear' }),
         screen.getByRole('checkbox', { name: 'Multi-pizza deals' }),
       ]
       for (const control of order) {

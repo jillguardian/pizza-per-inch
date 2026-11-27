@@ -161,8 +161,8 @@ const PINNED_BUTTONS = [
   '.toolbar-actions button[aria-label="Sort by value"]',
 ]
 const PINNED_CONTROLS = [
-  // On a phone Reset is among the pinned buttons. From 768px it is in the settings row.
-  { width: 375, controls: [...PINNED_BUTTONS, '.toolbar-actions button[aria-label="Reset"]'] },
+  // On a phone Clear is among the pinned buttons. From 768px it is in the settings row.
+  { width: 375, controls: [...PINNED_BUTTONS, '.toolbar-actions button[aria-label="Clear"]'] },
   {
     width: 768,
     controls: [

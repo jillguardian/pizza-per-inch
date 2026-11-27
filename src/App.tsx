@@ -11,8 +11,8 @@ import { useAnnouncer } from './hooks/useAnnouncer'
 import { useBestValueAnnouncement } from './hooks/useBestValueAnnouncement'
 import { useOffers } from './hooks/useOffers'
 import {
-  comparisonReset,
   NOTHING_TO_SORT,
+  OFFERS_CLEARED,
   offerAdded,
   offerRemoved,
   pizzaAdded,
@@ -20,7 +20,7 @@ import {
   sortedByValue,
 } from './lib/announcements'
 import { detectLocaleCurrency, isSupportedCurrency } from './lib/currencies'
-import { INITIAL_OFFERS, isBundle, rankOffers, sortByRank, type Offer } from './lib/offer'
+import { isBundle, rankOffers, sortByRank, type Offer } from './lib/offer'
 import { outline, type SizeUnit } from './lib/pizza'
 import { loadSaved, saveComparison } from './lib/savedStorage'
 
@@ -37,7 +37,7 @@ export default function App(): ReactElement {
     removePizza,
     removeOffer,
     sortOffers,
-    resetOffers,
+    clearOffers,
   } = useOffers(saved?.offers)
   const [currency, setCurrency] = useState(saved?.currency ?? DEFAULT_CURRENCY)
   const [priceUnit, setPriceUnit] = useState<SizeUnit>(saved?.priceUnit ?? 'in')
@@ -76,12 +76,9 @@ export default function App(): ReactElement {
     sortOffers()
   }
 
-  function handleReset(): void {
-    resetOffers()
-    setCurrency(DEFAULT_CURRENCY)
-    setPriceUnit('in')
-    setBundlesChosen(false)
-    announce(comparisonReset(INITIAL_OFFERS.length))
+  function handleClear(): void {
+    clearOffers()
+    announce(OFFERS_CLEARED)
   }
 
   function handleAddPizza(offer: Offer): void {
@@ -143,11 +140,17 @@ export default function App(): ReactElement {
           bundlesLocked={bundlesLocked}
           onAddOffer={handleAddOffer}
           onSortOffers={handleSortOffers}
-          onReset={handleReset}
+          offerCount={offers.length}
+          onClear={handleClear}
           onBundlesChange={setBundlesChosen}
         />
 
         <div className="offers">
+          {offers.length === 0 && (
+            <Text c="dimmed" ta="center" py="xl" className="offers-empty">
+              No offers yet. Add an offer to compare prices.
+            </Text>
+          )}
           {offers.map((offer) => (
             <OfferCard
               key={offer.id}

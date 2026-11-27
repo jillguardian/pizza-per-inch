@@ -4,9 +4,9 @@ import type { ReactElement } from 'react'
 import { listCurrencies, type Currency } from '../lib/currencies'
 import type { SizeUnit } from '../lib/pizza'
 import { PHONE_QUERY } from './breakpoints'
+import { ClearButton } from './ClearButton'
 import { ADD_OFFER_ID } from './focusIds'
 import { PlusIcon } from './PlusIcon'
-import { ResetButton } from './ResetButton'
 import { SortIcon } from './SortIcon'
 import './Toolbar.css'
 
@@ -21,7 +21,8 @@ interface ToolbarProps {
   bundlesLocked: boolean
   onAddOffer: () => void
   onSortOffers: () => void
-  onReset: () => void
+  offerCount: number
+  onClear: () => void
   onBundlesChange: (enabled: boolean) => void
 }
 
@@ -34,8 +35,8 @@ const CURRENCY_OPTIONS = [
   { group: 'All currencies', items: toOptions(CURRENCIES.other) },
 ]
 
-// Reset joins the pinned buttons on a phone, and sits at the right end of the settings row
-// elsewhere. It is rendered in one place only, so there is never a second Reset button hidden in
+// Clear joins the pinned buttons on a phone, and sits at the right end of the settings row
+// elsewhere. It is rendered in one place only, so there is never a second Clear button hidden in
 // the page.
 const PRICE_UNIT_OPTIONS = [
   { value: 'in', label: 'Square inch' },
@@ -51,7 +52,8 @@ export function Toolbar({
   bundlesLocked,
   onAddOffer,
   onSortOffers,
-  onReset,
+  offerCount,
+  onClear,
   onBundlesChange,
 }: Readonly<ToolbarProps>): ReactElement {
   const phone = useMediaQuery(PHONE_QUERY, false, { getInitialValueInEffect: false })
@@ -73,8 +75,8 @@ export function Toolbar({
           onChange={(event) => onPriceUnitChange(event.currentTarget.value as SizeUnit)}
         />
         {!phone && (
-          <div className="toolbar-reset">
-            <ResetButton onConfirm={onReset} iconOnly={phone} />
+          <div className="toolbar-clear">
+            <ClearButton offerCount={offerCount} onConfirm={onClear} iconOnly={phone} />
           </div>
         )}
       </div>
@@ -94,8 +96,8 @@ export function Toolbar({
           <span className="toolbar-button-label">Sort by value</span>
         </Button>
         {phone && (
-          <div className="toolbar-reset">
-            <ResetButton onConfirm={onReset} iconOnly={phone} />
+          <div className="toolbar-clear">
+            <ClearButton offerCount={offerCount} onConfirm={onClear} iconOnly={phone} />
           </div>
         )}
       </div>

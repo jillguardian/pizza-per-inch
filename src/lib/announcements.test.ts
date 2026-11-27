@@ -2,12 +2,12 @@ import { describe, expect, it } from 'vitest'
 import {
   bestValue,
   NOTHING_TO_SORT,
+  OFFERS_CLEARED,
   offerAdded,
   offerRemoved,
   pizzaAdded,
   pizzaRemoved,
   sortedByValue,
-  comparisonReset,
 } from './announcements'
 
 describe('announcements', () => {
@@ -48,8 +48,7 @@ describe('announcements', () => {
     expect(sortedByValue(['', 'Large'])).toBe('Sorted by value, best first: Unnamed offer, Large.')
   })
 
-  it('says how many example offers a reset leaves', () => {
-    expect(comparisonReset(2)).toBe('Comparison reset to 2 example offers.')
-    expect(comparisonReset(1)).toBe('Comparison reset to 1 example offer.')
+  it('says that every offer is gone and what to do next', () => {
+    expect(OFFERS_CLEARED).toBe('All offers cleared. Add an offer to start comparing.')
   })
 })

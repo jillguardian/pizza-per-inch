@@ -142,36 +142,36 @@ describe('useOffers', () => {
     })
   })
 
-  describe('starting over', () => {
-    it('goes back to the example offers', () => {
+  describe('clearing', () => {
+    it('leaves no offers', () => {
       const { result } = renderHook(() => useOffers())
       act(() => result.current.addOffer())
-      act(() => result.current.removeOffer(1))
       act(() => result.current.updateOffer(2, { name: 'Changed', price: 99 }))
 
-      act(() => result.current.resetOffers())
+      act(() => result.current.clearOffers())
 
-      expect(result.current.offers).toEqual(INITIAL_OFFERS)
+      expect(result.current.offers).toEqual([])
     })
 
-    it('counts the ids from the examples again, so the next offer is named after them', () => {
+    it('counts the ids from the start again, so the next offer is "Offer 1"', () => {
       const { result } = renderHook(() => useOffers())
       for (let i = 0; i < 4; i++) act(() => result.current.addOffer())
 
-      act(() => result.current.resetOffers())
+      act(() => result.current.clearOffers())
       act(() => result.current.addOffer())
 
-      expect(result.current.offers.map((o) => o.id)).toEqual([1, 2, 3])
-      expect(result.current.offers[2].name).toBe('Offer 3')
+      expect(result.current.offers.map((o) => o.id)).toEqual([1])
+      expect(result.current.offers[0].name).toBe('Offer 1')
+      expect(result.current.offers[0].pizzas.map((p) => p.id)).toEqual([1])
     })
 
-    it('replaces saved offers too', () => {
+    it('clears saved offers too', () => {
       const saved = [{ id: 9, name: 'Saved', notes: '', price: 5, pizzas: [createPizza(4)] }]
       const { result } = renderHook(() => useOffers(saved))
 
-      act(() => result.current.resetOffers())
+      act(() => result.current.clearOffers())
 
-      expect(result.current.offers).toEqual(INITIAL_OFFERS)
+      expect(result.current.offers).toEqual([])
     })
   })
 })

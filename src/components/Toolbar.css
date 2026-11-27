@@ -14,9 +14,9 @@
   min-width: 0;
 }
 
-/* Reset is pulled to the right. On a phone it is among the pinned buttons, and elsewhere at the end
+/* Clear is pulled to the right. On a phone it is among the pinned buttons, and elsewhere at the end
    of the settings row. */
-.toolbar-reset {
+.toolbar-clear {
   margin-left: auto;
 }
 
@@ -106,7 +106,7 @@
     flex: 0 0 360px;
   }
 
-  /* The second select, not the last child: Reset follows it in the row. */
+  /* The second select, not the last child: Clear follows it in the row. */
   .toolbar-settings > .toolbar-select + .toolbar-select {
     flex: 0 0 180px;
   }

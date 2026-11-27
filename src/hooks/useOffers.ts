@@ -13,7 +13,7 @@ interface UseOffers {
   removePizza: (offerId: number, pizzaId: number) => void
   removeOffer: (id: number) => void
   sortOffers: () => void
-  resetOffers: () => void
+  clearOffers: () => void
 }
 
 // Ids carry on from the highest one given, so an offer or pizza added later never reuses one. The
@@ -84,11 +84,11 @@ export function useOffers(initialOffers: Offer[] = INITIAL_OFFERS): UseOffers {
     setOffers(sortByRank)
   }
 
-  // Back to the examples, with the ids counting from there again, so the next offer is "Offer 3".
-  function resetOffers(): void {
-    setOffers(INITIAL_OFFERS)
-    nextId.current = nextOfferId(INITIAL_OFFERS)
-    nextPizzaId.current = nextPizzaIdFor(INITIAL_OFFERS)
+  // No offers, with the ids counting from the start again, so the next offer is "Offer 1".
+  function clearOffers(): void {
+    setOffers([])
+    nextId.current = nextOfferId([])
+    nextPizzaId.current = nextPizzaIdFor([])
   }
 
   return {
@@ -100,6 +100,6 @@ export function useOffers(initialOffers: Offer[] = INITIAL_OFFERS): UseOffers {
     removePizza,
     removeOffer,
     sortOffers,
-    resetOffers,
+    clearOffers,
   }
 }

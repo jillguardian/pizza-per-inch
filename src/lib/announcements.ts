@@ -34,6 +34,4 @@ export function bestValue(names: string[]): string {
     : `${list} are now tied for the best value.`
 }
 
-export function comparisonReset(offers: number): string {
-  return `Comparison reset to ${countOf(offers, 'example offer')}.`
-}
+export const OFFERS_CLEARED = 'All offers cleared. Add an offer to start comparing.'

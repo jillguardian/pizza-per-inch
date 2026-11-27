@@ -59,7 +59,7 @@ Rules for working in this repo, and why they exist. Add new ones here, not in `C
 - **Loading checks structure and types, not ranges.** The inputs can briefly hold values that are not final (a size of 0, say), and one of them must not throw away the whole comparison. Range checks belong to the input validation work. Any structural problem makes the whole comparison fall back to the defaults.
 - **Two open tabs overwrite each other:** each keeps its own state and saves it on every change, and nothing reads the saved copy again after the first load, so the last tab to change anything wins. That is accepted for a one-person tool. Listening for the `storage` event would fix it, at the cost of merging.
 - **Storage may be missing, blocked or full.** Reading failures mean "nothing saved", and a failed write is ignored. The page works either way.
-- **Reset puts the comparison back to the two example offers** and the default currency, price unit and checkbox, after a confirmation. The saved copy follows, because it is saved like any other change.
+- **Clear removes every offer** after a confirmation, and leaves the currency, price unit and deals setting alone, because those are preferences and not the comparison. The page then says "No offers yet" (it does the same when the last offer is removed by hand). The saved copy follows, because it is saved like any other change. The two example offers are for a first visit only, and there is no way back to them.
 - **Tests start with empty storage:** `src/test/setup.ts` clears `localStorage` after every test, so one test cannot leave a comparison for the next.
 
 ## Accessibility
@@ -79,13 +79,13 @@ Layouts are checked by hand in a real browser at these widths (jsdom can't lay o
 
 | Size    | Width         | Checked at | Toolbar                                                                                                                                                                                                |
 | ------- | ------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Mobile  | 320–767px     | 320, 375   | Currency and price unit share a row at full width. The pinned bar is the second row: Add offer (icon and text), then Sort and Reset as icons only, Reset at the right. The checkbox has the third row. |
-| Tablet  | 768–1023px    | 768        | The selects share the first row with Reset at the right end. The second row has the pinned add and sort buttons (icon and text) on the left and the checkbox on the right.                             |
-| Desktop | 1024px and up | 1024, 1280 | The selects keep a natural width and Reset is at the right end of their row. The second row has the pinned add and sort buttons and the checkbox side by side, all on the left.                        |
+| Mobile  | 320–767px     | 320, 375   | Currency and price unit share a row at full width. The pinned bar is the second row: Add offer (icon and text), then Sort and Clear as icons only, Clear at the right. The checkbox has the third row. |
+| Tablet  | 768–1023px    | 768        | The selects share the first row with Clear at the right end. The second row has the pinned add and sort buttons (icon and text) on the left and the checkbox on the right.                             |
+| Desktop | 1024px and up | 1024, 1280 | The selects keep a natural width and Clear is at the right end of their row. The second row has the pinned add and sort buttons and the checkbox side by side, all on the left.                        |
 
-- The layout breakpoints are `48em` (768px) and `64em` (1024px). Media queries can't read CSS variables, so the values are repeated in `App.css` and `Toolbar.css`; change them together. `Toolbar.tsx` repeats the 48em one too (`PHONE`): below it Reset is rendered among the pinned buttons, and above it in the settings row. It is rendered in one place only, so there is never a second Reset button hidden in the page.
+- The layout breakpoints are `48em` (768px) and `64em` (1024px). Media queries can't read CSS variables, so the values are repeated in `App.css` and `Toolbar.css`; change them together. `Toolbar.tsx` repeats the 48em one too (`PHONE`): below it Clear is rendered among the pinned buttons, and above it in the settings row. It is rendered in one place only, so there is never a second Clear button hidden in the page.
 - Design for 375px first, and make sure nothing scrolls sideways at 320px.
-- Only the add and sort buttons (and Reset, on a phone) are pinned. Settings are chosen once, so they scroll away.
+- Only the add and sort buttons (and Clear, on a phone) are pinned. Settings are chosen once, so they scroll away.
   _Why:_ a tall pinned toolbar takes too much of a phone screen.
 
 ## Structure
