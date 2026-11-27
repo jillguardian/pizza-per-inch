@@ -1,7 +1,8 @@
 import { Button, Group, Modal, Text } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import type { ReactElement } from 'react'
+import { useRef, type ReactElement } from 'react'
 import { EraserIcon } from './EraserIcon'
+import { ADD_OFFER_ID } from './focusIds'
 
 interface Props {
   offerCount: number
@@ -20,10 +21,21 @@ export function ClearButton({
   iconOnly = false,
 }: Readonly<Props>): ReactElement {
   const [opened, { open, close }] = useDisclosure(false)
+  const confirmed = useRef(false)
 
   function confirm(): void {
+    confirmed.current = true
     onConfirm()
     close()
+  }
+
+  // Clearing disables this button, so the dialog has nowhere to give focus back to. After a
+  // confirmed clear, focus goes to the button that starts the next comparison. After Cancel or
+  // Escape it goes back to this button, as usual.
+  function focusAddOfferAfterClear(): void {
+    if (!confirmed.current) return
+    confirmed.current = false
+    document.getElementById(ADD_OFFER_ID)?.focus()
   }
 
   return (
@@ -44,6 +56,7 @@ export function ClearButton({
         onClose={close}
         title={offerCount === 1 ? 'Clear the offer?' : `Clear all ${offerCount} offers?`}
         centered
+        onExitTransitionEnd={focusAddOfferAfterClear}
       >
         <Text mb="md">
           This removes every offer you have entered. Your currency, price unit and deals setting

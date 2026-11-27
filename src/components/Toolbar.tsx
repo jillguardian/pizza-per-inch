@@ -35,9 +35,6 @@ const CURRENCY_OPTIONS = [
   { group: 'All currencies', items: toOptions(CURRENCIES.other) },
 ]
 
-// Clear joins the pinned buttons on a phone, and sits at the right end of the settings row
-// elsewhere. It is rendered in one place only, so there is never a second Clear button hidden in
-// the page.
 const PRICE_UNIT_OPTIONS = [
   { value: 'in', label: 'Square inch' },
   { value: 'cm', label: 'Square cm' },
@@ -56,6 +53,9 @@ export function Toolbar({
   onClear,
   onBundlesChange,
 }: Readonly<ToolbarProps>): ReactElement {
+  // Clear joins the pinned buttons on a phone, and sits at the right end of the settings row
+  // elsewhere. It is rendered in one place only, so there is never a second Clear button hidden
+  // in the page.
   const phone = useMediaQuery(PHONE_QUERY, false, { getInitialValueInEffect: false })
   return (
     <>

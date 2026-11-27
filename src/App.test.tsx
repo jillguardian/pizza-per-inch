@@ -375,6 +375,30 @@ describe('App', () => {
       expectSettingsKept()
     })
 
+    it('moves focus to Add offer after clearing, so a keyboard user is not left at the top of the page', async () => {
+      renderWithMantine(<App />)
+      await userEvent.click(screen.getByRole('button', { name: 'Clear' }))
+      await userEvent.click(
+        within(await screen.findByRole('dialog')).getByRole('button', { name: 'Clear' }),
+      )
+
+      await waitFor(() =>
+        expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Add offer' })),
+      )
+    })
+
+    it('gives focus back to Clear when the dialog is cancelled', async () => {
+      renderWithMantine(<App />)
+      await userEvent.click(screen.getByRole('button', { name: 'Clear' }))
+      await userEvent.click(
+        within(await screen.findByRole('dialog')).getByRole('button', { name: 'Cancel' }),
+      )
+
+      await waitFor(() =>
+        expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Clear' })),
+      )
+    })
+
     it('starts again from "Offer 1" after clearing', async () => {
       renderWithMantine(<App />)
       await userEvent.click(screen.getByRole('button', { name: 'Clear' }))
@@ -399,6 +423,21 @@ describe('App', () => {
 
       await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
       expect(screen.getAllByLabelText('Name')).toHaveLength(3)
+    })
+
+    it('keeps the saved comparison when a number field is emptied or only partly typed', async () => {
+      const first = renderWithMantine(<App />)
+      const name = screen.getAllByLabelText('Name')[0]
+      await userEvent.clear(name)
+      await userEvent.type(name, 'Keep me')
+      await userEvent.clear(screen.getAllByLabelText('Price (USD)')[0])
+      await userEvent.clear(screen.getAllByLabelText('Diameter')[0])
+      await userEvent.type(screen.getAllByLabelText('Price (USD)')[1], '.')
+      first.unmount()
+
+      renderWithMantine(<App />)
+
+      expect((screen.getAllByLabelText('Name')[0] as HTMLInputElement).value).toBe('Keep me')
     })
 
     it('starts with the example offers when the saved data is damaged', () => {
